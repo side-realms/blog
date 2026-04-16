@@ -1,0 +1,225 @@
+<!doctype html>
+<html lang="ja-jp">
+  <head>
+    <title>自宅サーバ4: ネットワーク設定 // お茶は綾鷹派</title>
+    <link rel="shortcut icon" href="../../favicon.ico" />
+    <meta charset="utf-8" />
+    <meta name="generator" content="Hugo 0.154.5">
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="author" content="KoheiDoi" />
+    <meta name="description" content="" />
+    <link rel="stylesheet" href="../../css/main.min.28bf54a51b1e4711d8cbfc98ed1ef539e32c13fb19cade5b37dac3cab34b527a.css" />
+    
+    
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="自宅サーバ4: ネットワーク設定">
+  <meta name="twitter:description" content="固定IP sudo vim /etc/systemd/network/20-wired.network [Match] Name=enp3s0 [Network] Address=192.168.0.169/24 Gateway=192.168.0.1 DNS=9.9.9.9 DNS=1.1.1.1 sudo ln -sf /run/systemd/resolve/stub-resolv.conf /etc/resolv.conf sudo systemctl restart systemd-networkd sudo systemctl restart systemd-resolved nftable 設定 [pondering@Pondering ~]$ cat /etc/nftables.conf #!/usr/bin/nft -f # vim:set ts=2 sw=2 et: # IPv4/IPv6 Simple &amp; Safe firewall ruleset. # More examples in /usr/share/nftables/ and /usr/share/doc/nftables/examples/. flush ruleset # destroy table inet filter table inet filter { chain input { type filter hook input priority 0; policy drop; # ct state invalid drop comment &#34;early drop of invalid connections&#34; ct state established, related accept comment &#34;allow tracked connections&#34; iif lo accept comment &#34;allow from loopback&#34; meta l4proto { icmp, icmpv6 } accept comment &#34;allow icmp&#34; tcp dport ssh accept comment &#34;allow sshd&#34; tcp dport 5678 accept pkttype host limit rate 5/second counter reject with icmpx type admin-prohibited counter } chain forward { type filter hook forward priority 0; policy drop; } chain output { type filter hook output priority 0; policy accept; } } fail2ban [DEFAULT] bantime = 24h findtime = 10m maxretry = 5 banaction = nftables-multiport [sshd] enabled = true port = ssh filter = sshd logpath = /var/log/auth.log backend = systemd サーバのステータス通知 #!/bin/bash WEBHOOK_URL=&#34;xxx&#34; CPU=$(top -bn1 | grep &#34;Cpu(s)&#34; | awk &#39;{print 100 - $8}&#39;) MEM=$(free -m | awk &#39;NR==2{printf &#34;%.1f%% (%dMB / %dMB)&#34;, $3*100/$2, $3, $2}&#39;) DISK=$(df -h / | awk &#39;NR==2{printf &#34;%s (%s / %s)&#34;, $5, $3, $2}&#39;) TEMP=$(cat /sys/class/thermal/thermal_zone0/temp 2&gt;/dev/null | awk &#39;{printf &#34;%.1f°C&#34;, $1/1000}&#39;) UPTIME=$(uptime -p) CONTAINERS=$(podman ps --format &#34;{{.Names}}&#34; 2&gt;/dev/null | wc -l) DISK_PCT=$(df / | awk &#39;NR==2{print $5}&#39; | tr -d &#39;%&#39;) if [ &#34;$DISK_PCT&#34; -ge 80 ]; then COLOR=15158332 elif [ &#34;$DISK_PCT&#34; -ge 60 ]; then COLOR=16750848 else COLOR=3066993 fi curl -s -H &#34;Content-Type: application/json&#34; -X POST &#34;$WEBHOOK_URL&#34; -d &#34;{ \&#34;embeds\&#34;: [{ \&#34;title\&#34;: \&#34;🍩 Pondering Status 🍩\&#34;, \&#34;color\&#34;: $COLOR, \&#34;fields\&#34;: [ {\&#34;name\&#34;: \&#34;CPU\&#34;, \&#34;value\&#34;: \&#34;${CPU}%\&#34;, \&#34;inline\&#34;: true}, {\&#34;name\&#34;: \&#34;Memory\&#34;, \&#34;value\&#34;: \&#34;$MEM\&#34;, \&#34;inline\&#34;: true}, {\&#34;name\&#34;: \&#34;Disk\&#34;, \&#34;value\&#34;: \&#34;$DISK\&#34;, \&#34;inline\&#34;: true}, {\&#34;name\&#34;: \&#34;Temp\&#34;, \&#34;value\&#34;: \&#34;$TEMP\&#34;, \&#34;inline\&#34;: true}, {\&#34;name\&#34;: \&#34;Uptime\&#34;, \&#34;value\&#34;: \&#34;$UPTIME\&#34;, \&#34;inline\&#34;: true}, {\&#34;name\&#34;: \&#34;Containers\&#34;, \&#34;value\&#34;: \&#34;$CONTAINERS running\&#34;, \&#34;inline\&#34;: true} ] }] }&#34; ~/scripts/monitor.sh sudo vim /etc/systemd/system/monitor.service [Unit] Description=Server monitor Discord notification [Service] Type=oneshot User=pondering ExecStart=/home/pondering/scripts/monitor.sh sudo vim /etc/systemd/system/monitor.timer [Unit] Description=Run server monitor every 6 hours [Timer] OnCalendar=*-*-* 6:00:00 Persistent=true [Install] WantedBy=timers.target sudo systemctl enable monitor.timer sudo systemctl start monitor.timer">
+
+    <meta property="og:url" content="https://side-realms.dev/tech/proxmox4/">
+  <meta property="og:site_name" content="お茶は綾鷹派">
+  <meta property="og:title" content="自宅サーバ4: ネットワーク設定">
+  <meta property="og:description" content="固定IP sudo vim /etc/systemd/network/20-wired.network [Match] Name=enp3s0 [Network] Address=192.168.0.169/24 Gateway=192.168.0.1 DNS=9.9.9.9 DNS=1.1.1.1 sudo ln -sf /run/systemd/resolve/stub-resolv.conf /etc/resolv.conf sudo systemctl restart systemd-networkd sudo systemctl restart systemd-resolved nftable 設定 [pondering@Pondering ~]$ cat /etc/nftables.conf #!/usr/bin/nft -f # vim:set ts=2 sw=2 et: # IPv4/IPv6 Simple &amp; Safe firewall ruleset. # More examples in /usr/share/nftables/ and /usr/share/doc/nftables/examples/. flush ruleset # destroy table inet filter table inet filter { chain input { type filter hook input priority 0; policy drop; # ct state invalid drop comment &#34;early drop of invalid connections&#34; ct state established, related accept comment &#34;allow tracked connections&#34; iif lo accept comment &#34;allow from loopback&#34; meta l4proto { icmp, icmpv6 } accept comment &#34;allow icmp&#34; tcp dport ssh accept comment &#34;allow sshd&#34; tcp dport 5678 accept pkttype host limit rate 5/second counter reject with icmpx type admin-prohibited counter } chain forward { type filter hook forward priority 0; policy drop; } chain output { type filter hook output priority 0; policy accept; } } fail2ban [DEFAULT] bantime = 24h findtime = 10m maxretry = 5 banaction = nftables-multiport [sshd] enabled = true port = ssh filter = sshd logpath = /var/log/auth.log backend = systemd サーバのステータス通知 #!/bin/bash WEBHOOK_URL=&#34;xxx&#34; CPU=$(top -bn1 | grep &#34;Cpu(s)&#34; | awk &#39;{print 100 - $8}&#39;) MEM=$(free -m | awk &#39;NR==2{printf &#34;%.1f%% (%dMB / %dMB)&#34;, $3*100/$2, $3, $2}&#39;) DISK=$(df -h / | awk &#39;NR==2{printf &#34;%s (%s / %s)&#34;, $5, $3, $2}&#39;) TEMP=$(cat /sys/class/thermal/thermal_zone0/temp 2&gt;/dev/null | awk &#39;{printf &#34;%.1f°C&#34;, $1/1000}&#39;) UPTIME=$(uptime -p) CONTAINERS=$(podman ps --format &#34;{{.Names}}&#34; 2&gt;/dev/null | wc -l) DISK_PCT=$(df / | awk &#39;NR==2{print $5}&#39; | tr -d &#39;%&#39;) if [ &#34;$DISK_PCT&#34; -ge 80 ]; then COLOR=15158332 elif [ &#34;$DISK_PCT&#34; -ge 60 ]; then COLOR=16750848 else COLOR=3066993 fi curl -s -H &#34;Content-Type: application/json&#34; -X POST &#34;$WEBHOOK_URL&#34; -d &#34;{ \&#34;embeds\&#34;: [{ \&#34;title\&#34;: \&#34;🍩 Pondering Status 🍩\&#34;, \&#34;color\&#34;: $COLOR, \&#34;fields\&#34;: [ {\&#34;name\&#34;: \&#34;CPU\&#34;, \&#34;value\&#34;: \&#34;${CPU}%\&#34;, \&#34;inline\&#34;: true}, {\&#34;name\&#34;: \&#34;Memory\&#34;, \&#34;value\&#34;: \&#34;$MEM\&#34;, \&#34;inline\&#34;: true}, {\&#34;name\&#34;: \&#34;Disk\&#34;, \&#34;value\&#34;: \&#34;$DISK\&#34;, \&#34;inline\&#34;: true}, {\&#34;name\&#34;: \&#34;Temp\&#34;, \&#34;value\&#34;: \&#34;$TEMP\&#34;, \&#34;inline\&#34;: true}, {\&#34;name\&#34;: \&#34;Uptime\&#34;, \&#34;value\&#34;: \&#34;$UPTIME\&#34;, \&#34;inline\&#34;: true}, {\&#34;name\&#34;: \&#34;Containers\&#34;, \&#34;value\&#34;: \&#34;$CONTAINERS running\&#34;, \&#34;inline\&#34;: true} ] }] }&#34; ~/scripts/monitor.sh sudo vim /etc/systemd/system/monitor.service [Unit] Description=Server monitor Discord notification [Service] Type=oneshot User=pondering ExecStart=/home/pondering/scripts/monitor.sh sudo vim /etc/systemd/system/monitor.timer [Unit] Description=Run server monitor every 6 hours [Timer] OnCalendar=*-*-* 6:00:00 Persistent=true [Install] WantedBy=timers.target sudo systemctl enable monitor.timer sudo systemctl start monitor.timer">
+  <meta property="og:locale" content="ja_jp">
+  <meta property="og:type" content="article">
+    <meta property="article:section" content="tech">
+    <meta property="article:published_time" content="2023-10-09T17:57:25+09:00">
+    <meta property="article:modified_time" content="2023-10-09T17:57:25+09:00">
+
+  </head>
+  <body>
+    <header class="app-header">
+      <a href="https://side-realms.dev/"><img class="app-header-avatar" src="../../images/avatar.jpg" alt="KoheiDoi" /></a>
+      <span class="app-header-title">お茶は綾鷹派</span>
+      <p class="app-header-description">最近は颯も好き</p>
+      <p class="app-header-memo">内容の正確性は保証していません🐶</p>
+      <nav class="app-header-menu app-header-menu--main" aria-label="Main"><ul class="app-header-menu-list">
+            <li class="app-header-menu-item">
+              <a class="app-header-menu-link" href="../../">Home</a>
+            </li>
+            <li class="app-header-menu-item">
+              <a class="app-header-menu-link" href="../../log">life log</a>
+            </li>
+            <li class="app-header-menu-item">
+              <a class="app-header-menu-link" href="../../portfolio/">Portfolio</a>
+            </li>
+        </ul>
+      </nav>
+
+      <hr class="hr1">
+
+      <hr class="hr1">
+      <div class="app-header-social">
+        
+          <a href="https://github.com" target="_blank" rel="noreferrer noopener me">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-github">
+  <title>Github</title>
+  <path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"></path>
+</svg>
+          </a>
+        
+      </div>
+      <div class="app-footer-copyright">
+      </div>
+    </header>
+    <main class="app-container">
+      
+  <article class="post">
+    <header class="post-header">
+      <h1 class ="post-title">自宅サーバ4: ネットワーク設定</h1>
+      <div class="post-meta">
+        <div>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-calendar">
+  <title>calendar</title>
+  <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line>
+</svg>
+          Oct 9, 2023
+        </div>
+        <div>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-clock">
+  <title>clock</title>
+  <circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline>
+</svg>
+          2 min read
+        </div>
+      </div>
+      <hr>
+    </header>
+    <div class="post-content">
+      <h2 id="固定ip">固定IP</h2>
+<ul>
+<li><code>sudo vim /etc/systemd/network/20-wired.network</code>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-sh" data-lang="sh"><span style="display:flex;"><span><span style="color:#f92672">[</span>Match<span style="color:#f92672">]</span>
+</span></span><span style="display:flex;"><span>Name<span style="color:#f92672">=</span>enp3s0
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">[</span>Network<span style="color:#f92672">]</span>
+</span></span><span style="display:flex;"><span>Address<span style="color:#f92672">=</span>192.168.0.169/24
+</span></span><span style="display:flex;"><span>Gateway<span style="color:#f92672">=</span>192.168.0.1
+</span></span><span style="display:flex;"><span>DNS<span style="color:#f92672">=</span>9.9.9.9
+</span></span><span style="display:flex;"><span>DNS<span style="color:#f92672">=</span>1.1.1.1
+</span></span></code></pre></div></li>
+<li><code>sudo ln -sf /run/systemd/resolve/stub-resolv.conf /etc/resolv.conf</code></li>
+<li><code>sudo systemctl restart systemd-networkd</code></li>
+<li><code>sudo systemctl restart systemd-resolved</code></li>
+</ul>
+<h2 id="nftable-設定">nftable 設定</h2>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-sh" data-lang="sh"><span style="display:flex;"><span><span style="color:#f92672">[</span>pondering@Pondering ~<span style="color:#f92672">]</span>$ cat /etc/nftables.conf
+</span></span><span style="display:flex;"><span><span style="color:#75715e">#!/usr/bin/nft -f</span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e"># vim:set ts=2 sw=2 et:</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e"># IPv4/IPv6 Simple &amp; Safe firewall ruleset.</span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e"># More examples in /usr/share/nftables/ and /usr/share/doc/nftables/examples/.</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>flush ruleset
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e"># destroy table inet filter</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>table inet filter <span style="color:#f92672">{</span>
+</span></span><span style="display:flex;"><span>  chain input <span style="color:#f92672">{</span>
+</span></span><span style="display:flex;"><span>    type filter hook input priority 0; policy drop;
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e"># ct state invalid drop comment &#34;early drop of invalid connections&#34;</span>
+</span></span><span style="display:flex;"><span>    ct state established, related accept comment <span style="color:#e6db74">&#34;allow tracked connections&#34;</span>
+</span></span><span style="display:flex;"><span>    iif lo accept comment <span style="color:#e6db74">&#34;allow from loopback&#34;</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    meta l4proto <span style="color:#f92672">{</span> icmp, icmpv6 <span style="color:#f92672">}</span> accept comment <span style="color:#e6db74">&#34;allow icmp&#34;</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    tcp dport ssh accept comment <span style="color:#e6db74">&#34;allow sshd&#34;</span>
+</span></span><span style="display:flex;"><span>    tcp dport <span style="color:#ae81ff">5678</span> accept
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    pkttype host limit rate 5/second counter reject with icmpx type admin-prohibited
+</span></span><span style="display:flex;"><span>    counter
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">}</span>
+</span></span><span style="display:flex;"><span>  chain forward <span style="color:#f92672">{</span>
+</span></span><span style="display:flex;"><span>    type filter hook forward priority 0; policy drop;
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">}</span>
+</span></span><span style="display:flex;"><span>  chain output <span style="color:#f92672">{</span>
+</span></span><span style="display:flex;"><span>    type filter hook output priority 0; policy accept;
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">}</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">}</span>
+</span></span></code></pre></div><h2 id="fail2ban">fail2ban</h2>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-sh" data-lang="sh"><span style="display:flex;"><span><span style="color:#f92672">[</span>DEFAULT<span style="color:#f92672">]</span>
+</span></span><span style="display:flex;"><span>bantime <span style="color:#f92672">=</span> 24h
+</span></span><span style="display:flex;"><span>findtime <span style="color:#f92672">=</span> 10m
+</span></span><span style="display:flex;"><span>maxretry <span style="color:#f92672">=</span> <span style="color:#ae81ff">5</span>
+</span></span><span style="display:flex;"><span>banaction <span style="color:#f92672">=</span> nftables-multiport
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">[</span>sshd<span style="color:#f92672">]</span>
+</span></span><span style="display:flex;"><span>enabled <span style="color:#f92672">=</span> true
+</span></span><span style="display:flex;"><span>port <span style="color:#f92672">=</span> ssh
+</span></span><span style="display:flex;"><span>filter <span style="color:#f92672">=</span> sshd
+</span></span><span style="display:flex;"><span>logpath <span style="color:#f92672">=</span> /var/log/auth.log
+</span></span><span style="display:flex;"><span>backend <span style="color:#f92672">=</span> systemd
+</span></span></code></pre></div><h2 id="サーバのステータス通知">サーバのステータス通知</h2>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-sh" data-lang="sh"><span style="display:flex;"><span><span style="color:#75715e">#!/bin/bash
+</span></span></span><span style="display:flex;"><span>WEBHOOK_URL<span style="color:#f92672">=</span><span style="color:#e6db74">&#34;xxx&#34;</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>CPU<span style="color:#f92672">=</span><span style="color:#66d9ef">$(</span>top -bn1 | grep <span style="color:#e6db74">&#34;Cpu(s)&#34;</span> | awk <span style="color:#e6db74">&#39;{print 100 - $8}&#39;</span><span style="color:#66d9ef">)</span>
+</span></span><span style="display:flex;"><span>MEM<span style="color:#f92672">=</span><span style="color:#66d9ef">$(</span>free -m | awk <span style="color:#e6db74">&#39;NR==2{printf &#34;%.1f%%  (%dMB / %dMB)&#34;, $3*100/$2, $3, $2}&#39;</span><span style="color:#66d9ef">)</span>
+</span></span><span style="display:flex;"><span>DISK<span style="color:#f92672">=</span><span style="color:#66d9ef">$(</span>df -h / | awk <span style="color:#e6db74">&#39;NR==2{printf &#34;%s  (%s / %s)&#34;, $5, $3, $2}&#39;</span><span style="color:#66d9ef">)</span>
+</span></span><span style="display:flex;"><span>TEMP<span style="color:#f92672">=</span><span style="color:#66d9ef">$(</span>cat /sys/class/thermal/thermal_zone0/temp 2&gt;/dev/null | awk <span style="color:#e6db74">&#39;{printf &#34;%.1f°C&#34;, $1/1000}&#39;</span><span style="color:#66d9ef">)</span>
+</span></span><span style="display:flex;"><span>UPTIME<span style="color:#f92672">=</span><span style="color:#66d9ef">$(</span>uptime -p<span style="color:#66d9ef">)</span>
+</span></span><span style="display:flex;"><span>CONTAINERS<span style="color:#f92672">=</span><span style="color:#66d9ef">$(</span>podman ps --format <span style="color:#e6db74">&#34;{{.Names}}&#34;</span> 2&gt;/dev/null | wc -l<span style="color:#66d9ef">)</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>DISK_PCT<span style="color:#f92672">=</span><span style="color:#66d9ef">$(</span>df / | awk <span style="color:#e6db74">&#39;NR==2{print $5}&#39;</span> | tr -d <span style="color:#e6db74">&#39;%&#39;</span><span style="color:#66d9ef">)</span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">if</span> <span style="color:#f92672">[</span> <span style="color:#e6db74">&#34;</span>$DISK_PCT<span style="color:#e6db74">&#34;</span> -ge <span style="color:#ae81ff">80</span> <span style="color:#f92672">]</span>; <span style="color:#66d9ef">then</span>
+</span></span><span style="display:flex;"><span>  COLOR<span style="color:#f92672">=</span><span style="color:#ae81ff">15158332</span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">elif</span> <span style="color:#f92672">[</span> <span style="color:#e6db74">&#34;</span>$DISK_PCT<span style="color:#e6db74">&#34;</span> -ge <span style="color:#ae81ff">60</span> <span style="color:#f92672">]</span>; <span style="color:#66d9ef">then</span>
+</span></span><span style="display:flex;"><span>  COLOR<span style="color:#f92672">=</span><span style="color:#ae81ff">16750848</span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">else</span>
+</span></span><span style="display:flex;"><span>  COLOR<span style="color:#f92672">=</span><span style="color:#ae81ff">3066993</span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">fi</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>curl -s -H <span style="color:#e6db74">&#34;Content-Type: application/json&#34;</span> -X POST <span style="color:#e6db74">&#34;</span>$WEBHOOK_URL<span style="color:#e6db74">&#34;</span> -d <span style="color:#e6db74">&#34;{
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">  \&#34;embeds\&#34;: [{
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">    \&#34;title\&#34;: \&#34;🍩 Pondering Status 🍩\&#34;,
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">    \&#34;color\&#34;: </span>$COLOR<span style="color:#e6db74">,
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">    \&#34;fields\&#34;: [
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">      {\&#34;name\&#34;: \&#34;CPU\&#34;, \&#34;value\&#34;: \&#34;</span><span style="color:#e6db74">${</span>CPU<span style="color:#e6db74">}</span><span style="color:#e6db74">%\&#34;, \&#34;inline\&#34;: true},
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">      {\&#34;name\&#34;: \&#34;Memory\&#34;, \&#34;value\&#34;: \&#34;</span>$MEM<span style="color:#e6db74">\&#34;, \&#34;inline\&#34;: true},
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">      {\&#34;name\&#34;: \&#34;Disk\&#34;, \&#34;value\&#34;: \&#34;</span>$DISK<span style="color:#e6db74">\&#34;, \&#34;inline\&#34;: true},
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">      {\&#34;name\&#34;: \&#34;Temp\&#34;, \&#34;value\&#34;: \&#34;</span>$TEMP<span style="color:#e6db74">\&#34;, \&#34;inline\&#34;: true},
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">      {\&#34;name\&#34;: \&#34;Uptime\&#34;, \&#34;value\&#34;: \&#34;</span>$UPTIME<span style="color:#e6db74">\&#34;, \&#34;inline\&#34;: true},
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">      {\&#34;name\&#34;: \&#34;Containers\&#34;, \&#34;value\&#34;: \&#34;</span>$CONTAINERS<span style="color:#e6db74"> running\&#34;, \&#34;inline\&#34;: true}
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">    ]
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">  }]
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">}&#34;</span>
+</span></span></code></pre></div><ul>
+<li><code>~/scripts/monitor.sh</code></li>
+<li><code>sudo vim /etc/systemd/system/monitor.service</code></li>
+</ul>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-sh" data-lang="sh"><span style="display:flex;"><span><span style="color:#f92672">[</span>Unit<span style="color:#f92672">]</span>
+</span></span><span style="display:flex;"><span>Description<span style="color:#f92672">=</span>Server monitor Discord notification
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">[</span>Service<span style="color:#f92672">]</span>
+</span></span><span style="display:flex;"><span>Type<span style="color:#f92672">=</span>oneshot
+</span></span><span style="display:flex;"><span>User<span style="color:#f92672">=</span>pondering
+</span></span><span style="display:flex;"><span>ExecStart<span style="color:#f92672">=</span>/home/pondering/scripts/monitor.sh
+</span></span></code></pre></div><ul>
+<li><code>sudo vim /etc/systemd/system/monitor.timer</code></li>
+</ul>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-sh" data-lang="sh"><span style="display:flex;"><span><span style="color:#f92672">[</span>Unit<span style="color:#f92672">]</span>
+</span></span><span style="display:flex;"><span>Description<span style="color:#f92672">=</span>Run server monitor every <span style="color:#ae81ff">6</span> hours
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">[</span>Timer<span style="color:#f92672">]</span>
+</span></span><span style="display:flex;"><span>OnCalendar<span style="color:#f92672">=</span>*-*-* 6:00:00
+</span></span><span style="display:flex;"><span>Persistent<span style="color:#f92672">=</span>true
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">[</span>Install<span style="color:#f92672">]</span>
+</span></span><span style="display:flex;"><span>WantedBy<span style="color:#f92672">=</span>timers.target
+</span></span></code></pre></div><ul>
+<li><code>sudo systemctl enable monitor.timer</code></li>
+<li><code>sudo systemctl start monitor.timer</code></li>
+</ul>
+
+    </div>
+    <div class="post-footer">
+      
+      
+    </div>
+  </article>
+  <hr>
+  <p>© side-realms All rights reserved.</p>
+
+    </main>
+  </body>
+</html>
