@@ -7,6 +7,8 @@ title = "お茶は綾鷹派"
 buildDrafts = false
 buildFuture = false
 buildExpired = false
+cleanDestinationDir = true
+disableHugoGeneratorInject = true
 
 [menu]
   [[menu.main]]
@@ -20,10 +22,20 @@ buildExpired = false
     url = "/log"
     weight = 2
   [[menu.main]]
+    identifier = "tech"
+    name = "tech"
+    url = "/tech/"
+    weight = 3
+  [[menu.main]]
+    identifier = "other"
+    name = "other"
+    url = "/other/"
+    weight = 4
+  [[menu.main]]
     identifier = "Portfolio"
     name = "Portfolio"
     url = "/portfolio/"
-    weight = 3
+    weight = 5
 
 [params]
   author = "KoheiDoi"
@@ -42,11 +54,11 @@ buildExpired = false
 #    url = "https://twitter.com"
 
 [params.style]
-darkestColor = "#12161c"  # header background
-darkColor = "#161b22"     # page background
-lightColor = "#cfd6e0"    # body text
-lightestColor = "#f4f7fb" # title text
-primaryColor = "#6fa8dc"  # accent
+darkestColor = "#121110"  # header background
+darkColor = "#0d0c0b"     # page background
+lightColor = "#d4cfc7"    # body text
+lightestColor = "#f4f0e8" # title text
+primaryColor = "#ff5c38"  # accent
 
 [pagination]
 pagerSize = 20

@@ -1,0 +1,200 @@
+<!doctype html>
+<html lang="ja-jp">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>自作 OS で memcmp // お茶は綾鷹派</title>
+    <link rel="shortcut icon" href="../../favicon.ico" />
+    <meta name="author" content="KoheiDoi" />
+    <meta name="description" content="" />
+    <link rel="stylesheet" href="../../css/main.min.7ef07f20f1ac3c2ab2cd0f04f24d64b0242cd34a878cbb902a718ecf7e50d7cf.css" />
+    
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="自作 OS で memcmp">
+  <meta name="twitter:description" content="C 標準ライブラリ実装 教材には memcpy や strcmp が実装されていたので，練習がてら memcmp を実装する
+int memcmp(const void *buf1, const void *buf2, size_t n){ const uint8_t *p = (const uint8_t *)buf1; const uint8_t *t = (const uint8_t *)buf2; while(n--){ if(*p != *t) return *p - *t; p&#43;&#43;; t&#43;&#43;; } return 0; } テストの追加 そういえばテストが無いので追加する．
+void test_libc(void) { assert(memcmp(&#34;abc&#34;, &#34;abc&#34;, 3) == 0); assert(memcmp(&#34;abc&#34;, &#34;abd&#34;, 3) &lt; 0); // strcmp assert(strcmp(&#34;hello&#34;, &#34;hello&#34;) == 0); assert(strcmp(&#34;abc&#34;, &#34;abd&#34;) &lt; 0); assert(strcmp(&#34;apple&#34;, &#34;app&#34;) &gt; 0); // memcpy char buf[10]; memcpy(buf, &#34;hello&#34;, 6); assert(strcmp(buf, &#34;hello&#34;) == 0); printf(&#34;All tests passed\n&#34;); } あとは assert
+#define assert(expr) \ do { \ if (!(expr)) { \ printf(&#34;Assertion failed: %s at %s:%d\n&#34;, #expr, __FILE__, __LINE__); \ for (;;); \ } \ } while (0) 実行結果">
+
+    <meta property="og:url" content="https://side-realms.dev/tech/os2/">
+  <meta property="og:site_name" content="お茶は綾鷹派">
+  <meta property="og:title" content="自作 OS で memcmp">
+  <meta property="og:description" content="C 標準ライブラリ実装 教材には memcpy や strcmp が実装されていたので，練習がてら memcmp を実装する
+int memcmp(const void *buf1, const void *buf2, size_t n){ const uint8_t *p = (const uint8_t *)buf1; const uint8_t *t = (const uint8_t *)buf2; while(n--){ if(*p != *t) return *p - *t; p&#43;&#43;; t&#43;&#43;; } return 0; } テストの追加 そういえばテストが無いので追加する．
+void test_libc(void) { assert(memcmp(&#34;abc&#34;, &#34;abc&#34;, 3) == 0); assert(memcmp(&#34;abc&#34;, &#34;abd&#34;, 3) &lt; 0); // strcmp assert(strcmp(&#34;hello&#34;, &#34;hello&#34;) == 0); assert(strcmp(&#34;abc&#34;, &#34;abd&#34;) &lt; 0); assert(strcmp(&#34;apple&#34;, &#34;app&#34;) &gt; 0); // memcpy char buf[10]; memcpy(buf, &#34;hello&#34;, 6); assert(strcmp(buf, &#34;hello&#34;) == 0); printf(&#34;All tests passed\n&#34;); } あとは assert
+#define assert(expr) \ do { \ if (!(expr)) { \ printf(&#34;Assertion failed: %s at %s:%d\n&#34;, #expr, __FILE__, __LINE__); \ for (;;); \ } \ } while (0) 実行結果">
+  <meta property="og:locale" content="ja_jp">
+  <meta property="og:type" content="article">
+    <meta property="article:section" content="tech">
+    <meta property="article:published_time" content="2023-10-12T17:57:25+09:00">
+    <meta property="article:modified_time" content="2023-10-12T17:57:25+09:00">
+
+  </head>
+  <body>
+    <div class="site-spine" aria-hidden="true">
+      <span class="site-spine-title">自作 OS で memcmp</span>
+      <span class="site-spine-sub">お茶は綾鷹派</span>
+    </div>
+    <div class="site-ribbon" aria-hidden="true"></div>
+    <header class="site-header">
+      <div class="site-header-inner">
+        <a class="site-brand" href="../../">
+          <img class="site-brand-avatar" src="../../images/avatar.jpg" alt="" />
+          <span>お茶は綾鷹派</span>
+        </a>
+      </div>
+    </header>
+    <main class="app-container">
+      
+  <article class="post">
+    <header class="post-header">
+      <h1 class="post-title">自作 OS で memcmp</h1>
+      <div class="post-meta">
+        <div>
+          Oct 12, 2023
+        </div>
+      </div>
+      <hr>
+    </header>
+    <div class="post-content">
+      <h2 id="c-標準ライブラリ実装">C 標準ライブラリ実装</h2>
+<p>教材には memcpy や strcmp が実装されていたので，練習がてら memcmp を実装する</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-C" data-lang="C"><span style="display:flex;"><span><span style="color:#66d9ef">int</span> <span style="color:#a6e22e">memcmp</span>(<span style="color:#66d9ef">const</span> <span style="color:#66d9ef">void</span> <span style="color:#f92672">*</span>buf1, <span style="color:#66d9ef">const</span> <span style="color:#66d9ef">void</span> <span style="color:#f92672">*</span>buf2, <span style="color:#66d9ef">size_t</span> n){
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">const</span> <span style="color:#66d9ef">uint8_t</span> <span style="color:#f92672">*</span>p <span style="color:#f92672">=</span> (<span style="color:#66d9ef">const</span> <span style="color:#66d9ef">uint8_t</span> <span style="color:#f92672">*</span>)buf1;
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">const</span> <span style="color:#66d9ef">uint8_t</span> <span style="color:#f92672">*</span>t <span style="color:#f92672">=</span> (<span style="color:#66d9ef">const</span> <span style="color:#66d9ef">uint8_t</span> <span style="color:#f92672">*</span>)buf2;
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">while</span>(n<span style="color:#f92672">--</span>){
+</span></span><span style="display:flex;"><span>      <span style="color:#66d9ef">if</span>(<span style="color:#f92672">*</span>p <span style="color:#f92672">!=</span> <span style="color:#f92672">*</span>t)
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">return</span> <span style="color:#f92672">*</span>p <span style="color:#f92672">-</span> <span style="color:#f92672">*</span>t;
+</span></span><span style="display:flex;"><span>      p<span style="color:#f92672">++</span>;
+</span></span><span style="display:flex;"><span>      t<span style="color:#f92672">++</span>;
+</span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">return</span> <span style="color:#ae81ff">0</span>;
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><h2 id="テストの追加">テストの追加</h2>
+<p>そういえばテストが無いので追加する．</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-C" data-lang="C"><span style="display:flex;"><span><span style="color:#66d9ef">void</span> <span style="color:#a6e22e">test_libc</span>(<span style="color:#66d9ef">void</span>) {
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">assert</span>(<span style="color:#a6e22e">memcmp</span>(<span style="color:#e6db74">&#34;abc&#34;</span>, <span style="color:#e6db74">&#34;abc&#34;</span>, <span style="color:#ae81ff">3</span>) <span style="color:#f92672">==</span> <span style="color:#ae81ff">0</span>);
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">assert</span>(<span style="color:#a6e22e">memcmp</span>(<span style="color:#e6db74">&#34;abc&#34;</span>, <span style="color:#e6db74">&#34;abd&#34;</span>, <span style="color:#ae81ff">3</span>) <span style="color:#f92672">&lt;</span> <span style="color:#ae81ff">0</span>);
+</span></span><span style="display:flex;"><span>    
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e">// strcmp
+</span></span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">assert</span>(<span style="color:#a6e22e">strcmp</span>(<span style="color:#e6db74">&#34;hello&#34;</span>, <span style="color:#e6db74">&#34;hello&#34;</span>) <span style="color:#f92672">==</span> <span style="color:#ae81ff">0</span>);
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">assert</span>(<span style="color:#a6e22e">strcmp</span>(<span style="color:#e6db74">&#34;abc&#34;</span>, <span style="color:#e6db74">&#34;abd&#34;</span>) <span style="color:#f92672">&lt;</span> <span style="color:#ae81ff">0</span>);
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">assert</span>(<span style="color:#a6e22e">strcmp</span>(<span style="color:#e6db74">&#34;apple&#34;</span>, <span style="color:#e6db74">&#34;app&#34;</span>) <span style="color:#f92672">&gt;</span> <span style="color:#ae81ff">0</span>);
+</span></span><span style="display:flex;"><span>    
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e">// memcpy
+</span></span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">char</span> buf[<span style="color:#ae81ff">10</span>];
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">memcpy</span>(buf, <span style="color:#e6db74">&#34;hello&#34;</span>, <span style="color:#ae81ff">6</span>);
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">assert</span>(<span style="color:#a6e22e">strcmp</span>(buf, <span style="color:#e6db74">&#34;hello&#34;</span>) <span style="color:#f92672">==</span> <span style="color:#ae81ff">0</span>);
+</span></span><span style="display:flex;"><span>    
+</span></span><span style="display:flex;"><span>    
+</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">printf</span>(<span style="color:#e6db74">&#34;All tests passed</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>);
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><p>あとは assert</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-C" data-lang="C"><span style="display:flex;"><span><span style="color:#75715e">#define assert(expr) \
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">    do { \
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">        if (!(expr)) { \
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">            printf(&#34;Assertion failed: %s at %s:%d\n&#34;, #expr, __FILE__, __LINE__); \
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">            for (;;); \
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">        } \
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">    } while (0)
+</span></span></span></code></pre></div><p>実行結果</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-sh" data-lang="sh"><span style="display:flex;"><span>u@u-VirtualBox:~/French_Cruller$ ./run.sh 
+</span></span><span style="display:flex;"><span>+ QEMU<span style="color:#f92672">=</span>qemu-system-riscv32
+</span></span><span style="display:flex;"><span>+ CC<span style="color:#f92672">=</span>clang
+</span></span><span style="display:flex;"><span>+ CFLAGS<span style="color:#f92672">=</span><span style="color:#e6db74">&#39;-std=c11 -O2 -g3 -Wall -Wextra --target=riscv32-unknown-elf -fuse-ld=lld -fno-stack-protector -ffreestanding -nostdlib&#39;</span>
+</span></span><span style="display:flex;"><span>+ clang -std<span style="color:#f92672">=</span>c11 -O2 -g3 -Wall -Wextra --target<span style="color:#f92672">=</span>riscv32-unknown-elf -fuse-ld<span style="color:#f92672">=</span>lld -fno-stack-protector -ffreestanding -nostdlib -Wl,-Tkernel.ld -Wl,-Map<span style="color:#f92672">=</span>kernel.map -o kernel.elf kernel.c common.c
+</span></span><span style="display:flex;"><span>+ qemu-system-riscv32 -machine virt -bios default -nographic -serial mon:stdio --no-reboot -kernel kernel.elf
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>OpenSBI v1.7
+</span></span><span style="display:flex;"><span>   ____                    _____ ____ _____
+</span></span><span style="display:flex;"><span>  / __ <span style="color:#ae81ff">\ </span>                 / ____|  _ <span style="color:#ae81ff">\_</span>   _|
+</span></span><span style="display:flex;"><span> | |  | |_ __   ___ _ __ | <span style="color:#f92672">(</span>___ | |_<span style="color:#f92672">)</span> <span style="color:#f92672">||</span> |
+</span></span><span style="display:flex;"><span> | |  | | <span style="color:#e6db74">&#39;_ \ / _ \ &#39;</span>_ <span style="color:#ae81ff">\ \_</span>__ <span style="color:#ae81ff">\|</span>  _ &lt; | |
+</span></span><span style="display:flex;"><span> | |__| | |_<span style="color:#f92672">)</span> |  __/ | | |____<span style="color:#f92672">)</span> | |_<span style="color:#f92672">)</span> <span style="color:#f92672">||</span> |_
+</span></span><span style="display:flex;"><span>  <span style="color:#ae81ff">\_</span>___/| .__/ <span style="color:#ae81ff">\_</span>__|_| |_|_____/|____/_____|
+</span></span><span style="display:flex;"><span>        | |
+</span></span><span style="display:flex;"><span>        |_|
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>Platform Name               : riscv-virtio,qemu
+</span></span><span style="display:flex;"><span>Platform Features           : medeleg
+</span></span><span style="display:flex;"><span>Platform HART Count         : <span style="color:#ae81ff">1</span>
+</span></span><span style="display:flex;"><span>Platform IPI Device         : aclint-mswi
+</span></span><span style="display:flex;"><span>Platform Timer Device       : aclint-mtimer @ 10000000Hz
+</span></span><span style="display:flex;"><span>Platform Console Device     : uart8250
+</span></span><span style="display:flex;"><span>Platform HSM Device         : ---
+</span></span><span style="display:flex;"><span>Platform PMU Device         : ---
+</span></span><span style="display:flex;"><span>Platform Reboot Device      : syscon-reboot
+</span></span><span style="display:flex;"><span>Platform Shutdown Device    : syscon-poweroff
+</span></span><span style="display:flex;"><span>Platform Suspend Device     : ---
+</span></span><span style="display:flex;"><span>Platform CPPC Device        : ---
+</span></span><span style="display:flex;"><span>Firmware Base               : 0x80000000
+</span></span><span style="display:flex;"><span>Firmware Size               : <span style="color:#ae81ff">313</span> KB
+</span></span><span style="display:flex;"><span>Firmware RW Offset          : 0x40000
+</span></span><span style="display:flex;"><span>Firmware RW Size            : <span style="color:#ae81ff">57</span> KB
+</span></span><span style="display:flex;"><span>Firmware Heap Offset        : 0x45000
+</span></span><span style="display:flex;"><span>Firmware Heap Size          : <span style="color:#ae81ff">37</span> KB <span style="color:#f92672">(</span>total<span style="color:#f92672">)</span>, <span style="color:#ae81ff">2</span> KB <span style="color:#f92672">(</span>reserved<span style="color:#f92672">)</span>, <span style="color:#ae81ff">10</span> KB <span style="color:#f92672">(</span>used<span style="color:#f92672">)</span>, <span style="color:#ae81ff">24</span> KB <span style="color:#f92672">(</span>free<span style="color:#f92672">)</span>
+</span></span><span style="display:flex;"><span>Firmware Scratch Size       : <span style="color:#ae81ff">4096</span> B <span style="color:#f92672">(</span>total<span style="color:#f92672">)</span>, <span style="color:#ae81ff">1340</span> B <span style="color:#f92672">(</span>used<span style="color:#f92672">)</span>, <span style="color:#ae81ff">2756</span> B <span style="color:#f92672">(</span>free<span style="color:#f92672">)</span>
+</span></span><span style="display:flex;"><span>Runtime SBI Version         : 3.0
+</span></span><span style="display:flex;"><span>Standard SBI Extensions     : time,rfnc,ipi,base,hsm,srst,pmu,dbcn,fwft,legacy,dbtr,sse
+</span></span><span style="display:flex;"><span>Experimental SBI Extensions : none
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>Domain0 Name                : root
+</span></span><span style="display:flex;"><span>Domain0 Boot HART           : <span style="color:#ae81ff">0</span>
+</span></span><span style="display:flex;"><span>Domain0 HARTs               : 0*
+</span></span><span style="display:flex;"><span>Domain0 Region00            : 0x00100000-0x00100fff M: <span style="color:#f92672">(</span>I,R,W<span style="color:#f92672">)</span> S/U: <span style="color:#f92672">(</span>R,W<span style="color:#f92672">)</span>
+</span></span><span style="display:flex;"><span>Domain0 Region01            : 0x10000000-0x10000fff M: <span style="color:#f92672">(</span>I,R,W<span style="color:#f92672">)</span> S/U: <span style="color:#f92672">(</span>R,W<span style="color:#f92672">)</span>
+</span></span><span style="display:flex;"><span>Domain0 Region02            : 0x02000000-0x0200ffff M: <span style="color:#f92672">(</span>I,R,W<span style="color:#f92672">)</span> S/U: <span style="color:#f92672">()</span>
+</span></span><span style="display:flex;"><span>Domain0 Region03            : 0x80040000-0x8004ffff M: <span style="color:#f92672">(</span>R,W<span style="color:#f92672">)</span> S/U: <span style="color:#f92672">()</span>
+</span></span><span style="display:flex;"><span>Domain0 Region04            : 0x80000000-0x8003ffff M: <span style="color:#f92672">(</span>R,X<span style="color:#f92672">)</span> S/U: <span style="color:#f92672">()</span>
+</span></span><span style="display:flex;"><span>Domain0 Region05            : 0x0c400000-0x0c5fffff M: <span style="color:#f92672">(</span>I,R,W<span style="color:#f92672">)</span> S/U: <span style="color:#f92672">(</span>R,W<span style="color:#f92672">)</span>
+</span></span><span style="display:flex;"><span>Domain0 Region06            : 0x0c000000-0x0c3fffff M: <span style="color:#f92672">(</span>I,R,W<span style="color:#f92672">)</span> S/U: <span style="color:#f92672">(</span>R,W<span style="color:#f92672">)</span>
+</span></span><span style="display:flex;"><span>Domain0 Region07            : 0x00000000-0xffffffff M: <span style="color:#f92672">()</span> S/U: <span style="color:#f92672">(</span>R,W,X<span style="color:#f92672">)</span>
+</span></span><span style="display:flex;"><span>Domain0 Next Address        : 0x80200000
+</span></span><span style="display:flex;"><span>Domain0 Next Arg1           : 0x87e00000
+</span></span><span style="display:flex;"><span>Domain0 Next Mode           : S-mode
+</span></span><span style="display:flex;"><span>Domain0 SysReset            : yes
+</span></span><span style="display:flex;"><span>Domain0 SysSuspend          : yes
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>Boot HART ID                : <span style="color:#ae81ff">0</span>
+</span></span><span style="display:flex;"><span>Boot HART Domain            : root
+</span></span><span style="display:flex;"><span>Boot HART Priv Version      : v1.12
+</span></span><span style="display:flex;"><span>Boot HART Base ISA          : rv32imafdch
+</span></span><span style="display:flex;"><span>Boot HART ISA Extensions    : sstc,zicntr,zihpm,zicboz,zicbom,sdtrig,svadu
+</span></span><span style="display:flex;"><span>Boot HART PMP Count         : <span style="color:#ae81ff">16</span>
+</span></span><span style="display:flex;"><span>Boot HART PMP Granularity   : <span style="color:#ae81ff">2</span> bits
+</span></span><span style="display:flex;"><span>Boot HART PMP Address Bits  : <span style="color:#ae81ff">32</span>
+</span></span><span style="display:flex;"><span>Boot HART MHPM Info         : <span style="color:#ae81ff">16</span> <span style="color:#f92672">(</span>0x0007fff8<span style="color:#f92672">)</span>
+</span></span><span style="display:flex;"><span>Boot HART Debug Triggers    : <span style="color:#ae81ff">2</span> triggers
+</span></span><span style="display:flex;"><span>Boot HART MIDELEG           : 0x00001666
+</span></span><span style="display:flex;"><span>Boot HART MEDELEG           : 0x00f0b509
+</span></span><span style="display:flex;"><span>All tests passed
+</span></span></code></pre></div><p>OK</p>
+
+    </div>
+    <div class="post-footer">
+      
+      
+    </div>
+  </article>
+
+    </main>
+    <footer class="site-footer">
+      <div class="site-footer-inner">
+        <p class="site-footer-memo">最近は颯も好き ／ 内容の正確性は保証していません🐶</p>
+        <div class="site-footer-row">
+          <span>© side-realms All rights reserved.</span>
+          <span class="site-footer-social">
+            
+            <a href="https://github.com" target="_blank" rel="noreferrer noopener me">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-github">
+  <title>Github</title>
+  <path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"></path>
+</svg>
+            </a>
+            
+          </span>
+        </div>
+      </div>
+    </footer>
+  </body>
+</html>

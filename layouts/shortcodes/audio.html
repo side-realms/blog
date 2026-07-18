@@ -1,0 +1,5 @@
+{{- with .Get "src" -}}
+<audio controls preload="none" src="{{ printf "/audio/%s" . | relURL }}">
+  お使いのブラウザは audio 要素に対応していません。
+</audio>
+{{- end -}}
