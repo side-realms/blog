@@ -1,7 +1,7 @@
 ---
 title: "Can Hack: アクアのスピードメータ"
 date: 2025-08-30T03:49:25+09:00
-draft: false
+draft: true
 ---
 
 ## はじめに

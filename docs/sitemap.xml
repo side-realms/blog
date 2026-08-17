@@ -2,17 +2,20 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
   xmlns:xhtml="http://www.w3.org/1999/xhtml">
   <url>
-    <loc>https://side-realms.dev/other/</loc>
-    <lastmod>2026-06-17T01:38:12+09:00</lastmod>
+    <loc>https://side-realms.dev/tech/</loc>
+    <lastmod>2026-08-16T06:04:12+09:00</lastmod>
   </url><url>
     <loc>https://side-realms.dev/</loc>
+    <lastmod>2026-08-16T06:04:12+09:00</lastmod>
+  </url><url>
+    <loc>https://side-realms.dev/tech/seccamp/</loc>
+    <lastmod>2026-08-16T06:04:12+09:00</lastmod>
+  </url><url>
+    <loc>https://side-realms.dev/other/</loc>
     <lastmod>2026-06-17T01:38:12+09:00</lastmod>
   </url><url>
     <loc>https://side-realms.dev/other/memo/</loc>
     <lastmod>2026-06-17T01:38:12+09:00</lastmod>
-  </url><url>
-    <loc>https://side-realms.dev/tech/</loc>
-    <lastmod>2026-04-21T17:57:25+09:00</lastmod>
   </url><url>
     <loc>https://side-realms.dev/tech/yorushika/</loc>
     <lastmod>2026-04-21T17:57:25+09:00</lastmod>
@@ -28,9 +31,6 @@
   </url><url>
     <loc>https://side-realms.dev/other/nigthreign/</loc>
     <lastmod>2025-11-15T02:25:44+09:00</lastmod>
-  </url><url>
-    <loc>https://side-realms.dev/tech/car-hack1/</loc>
-    <lastmod>2025-08-30T03:49:25+09:00</lastmod>
   </url><url>
     <loc>https://side-realms.dev/other/paint/</loc>
     <lastmod>2025-04-20T01:38:12+09:00</lastmod>
