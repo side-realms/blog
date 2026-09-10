@@ -1,20 +1,20 @@
-name: GitHub Pages
+name: Build
 
+# 公開は master の /docs を GitHub Pages が直接配信している。
+# ここでは push / PR ごとにビルドが通るかだけ確認する。
 on:
   push:
     branches:
-      - main
+      - master
   pull_request:
 
 jobs:
-  deploy:
+  build:
     runs-on: ubuntu-22.04
     concurrency:
       group: ${{ github.workflow }}-${{ github.ref }}
     steps:
       - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0    # .GitInfo / .Lastmod のため
 
       - name: Setup Hugo
         uses: peaceiris/actions-hugo@v3
@@ -24,10 +24,3 @@ jobs:
 
       - name: Build
         run: hugo --minify --gc
-
-      - name: Deploy
-        uses: peaceiris/actions-gh-pages@v3
-        if: ${{ github.ref == 'refs/heads/main' }}
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./public

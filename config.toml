@@ -1,5 +1,6 @@
 baseURL = 'https://side-realms.dev/'
 languageCode = 'ja-jp'
+publishDir = 'docs'   # GitHub Pages が master の /docs を配信しているため
 title = '検品'
 buildDrafts = false
 buildFuture = false

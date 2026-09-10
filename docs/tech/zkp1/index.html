@@ -1,194 +1,75 @@
-<!doctype html>
-<html lang="ja-jp">
-  <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>ゼロ知識証明 1 // お茶は綾鷹派</title>
-    <link rel="shortcut icon" href="../../favicon.ico" />
-    <meta name="author" content="KoheiDoi" />
-    <meta name="description" content="" />
-    <link rel="stylesheet" href="../../css/main.min.7ef07f20f1ac3c2ab2cd0f04f24d64b0242cd34a878cbb902a718ecf7e50d7cf.css" />
-    
-  <meta name="twitter:card" content="summary">
-  <meta name="twitter:title" content="ゼロ知識証明 1">
-  <meta name="twitter:description" content="知識の証明 主張「Prover はある知識 (秘密情報や解) をもつ」に関して，知識の正しさを証明したい． 単に主張された事柄が真であることを証明するのは対話証明だが，その知識の証明をすることになる．
-ZKP ZKP は，その知識を Verifier に開示することなく知識を開示することなく(計算量的に再現不可能な形でのみ)証明したい． ZKP は下記を満たす．
-完全性: Prover が正しい知識をもっているなら，正当な手順で証明すれば Verifier はその知識が真実であることを疑いなく信頼できる 健全性: Prover は，Verifier を騙して偽の主張を真とみなすことはできない ゼロ知識: 主張が真か偽の他の情報を Verifer は受け取ることができない シグマプロトコル (Schnorr) 例えば知識 $w$ に関して，$g^w = y \mod p$ となるような $w$ をもっていることを証明したい．
-証明者 P は検証者 V に $a = g^r \mod p$ を送る V は P にランダムな $e$ を送る P は V に $z = r &#43; ew \mod q$ を送る V は $g^z = ay^e \mod p$ であることを確認する このとき，公開されているのは大きな素数 $p$，位数 $q$ をもつ部分群の生成元 $g$，公開鍵 $y = g^w \mod p$．">
-
-    <meta property="og:url" content="https://side-realms.dev/tech/zkp1/">
-  <meta property="og:site_name" content="お茶は綾鷹派">
-  <meta property="og:title" content="ゼロ知識証明 1">
-  <meta property="og:description" content="知識の証明 主張「Prover はある知識 (秘密情報や解) をもつ」に関して，知識の正しさを証明したい． 単に主張された事柄が真であることを証明するのは対話証明だが，その知識の証明をすることになる．
-ZKP ZKP は，その知識を Verifier に開示することなく知識を開示することなく(計算量的に再現不可能な形でのみ)証明したい． ZKP は下記を満たす．
-完全性: Prover が正しい知識をもっているなら，正当な手順で証明すれば Verifier はその知識が真実であることを疑いなく信頼できる 健全性: Prover は，Verifier を騙して偽の主張を真とみなすことはできない ゼロ知識: 主張が真か偽の他の情報を Verifer は受け取ることができない シグマプロトコル (Schnorr) 例えば知識 $w$ に関して，$g^w = y \mod p$ となるような $w$ をもっていることを証明したい．
-証明者 P は検証者 V に $a = g^r \mod p$ を送る V は P にランダムな $e$ を送る P は V に $z = r &#43; ew \mod q$ を送る V は $g^z = ay^e \mod p$ であることを確認する このとき，公開されているのは大きな素数 $p$，位数 $q$ をもつ部分群の生成元 $g$，公開鍵 $y = g^w \mod p$．">
-  <meta property="og:locale" content="ja_jp">
-  <meta property="og:type" content="article">
-    <meta property="article:section" content="tech">
-    <meta property="article:published_time" content="2023-10-02T18:40:23+09:00">
-    <meta property="article:modified_time" content="2023-10-02T18:40:23+09:00">
-
-  </head>
-  <body>
-    <div class="site-spine" aria-hidden="true">
-      <span class="site-spine-title">ゼロ知識証明 1</span>
-      <span class="site-spine-sub">お茶は綾鷹派</span>
-    </div>
-    <div class="site-ribbon" aria-hidden="true"></div>
-    <header class="site-header">
-      <div class="site-header-inner">
-        <a class="site-brand" href="../../">
-          <img class="site-brand-avatar" src="../../images/avatar.jpg" alt="" />
-          <span>お茶は綾鷹派</span>
-        </a>
-      </div>
-    </header>
-    <main class="app-container">
-      
-  <article class="post">
-    <header class="post-header">
-      <h1 class="post-title">ゼロ知識証明 1</h1>
-      <div class="post-meta">
-        <div>
-          Oct 2, 2023
-        </div>
-      </div>
-      <hr>
-    </header>
-    <div class="post-content">
-      <h2 id="知識の証明">知識の証明</h2>
-<p>主張「Prover はある知識 (秘密情報や解) をもつ」に関して，知識の正しさを証明したい．
-単に主張された事柄が真であることを証明するのは対話証明だが，その知識の証明をすることになる．</p>
-<h2 id="zkp">ZKP</h2>
-<p>ZKP は，その知識を Verifier に開示することなく知識を開示することなく(計算量的に再現不可能な形でのみ)証明したい．
-ZKP は下記を満たす．</p>
-<ul>
-<li>完全性: Prover が正しい知識をもっているなら，正当な手順で証明すれば Verifier はその知識が真実であることを疑いなく信頼できる</li>
-<li>健全性: Prover は，Verifier を騙して偽の主張を真とみなすことはできない</li>
-<li>ゼロ知識: 主張が真か偽の他の情報を Verifer は受け取ることができない</li>
-</ul>
-<h2 id="シグマプロトコル-schnorr">シグマプロトコル (Schnorr)</h2>
-<p>例えば知識 $w$ に関して，$g^w = y \mod p$ となるような $w$ をもっていることを証明したい．</p>
-<ol>
-<li>証明者 P は検証者 V に $a = g^r \mod p$ を送る</li>
-<li>V は P にランダムな $e$ を送る</li>
-<li>P は V に $z = r + ew \mod q$ を送る</li>
-<li>V は $g^z = ay^e \mod p$ であることを確認する</li>
-</ol>
-<p>このとき，公開されているのは大きな素数 $p$，位数 $q$ をもつ部分群の生成元 $g$，公開鍵 $y = g^w \mod p$．</p>
-<h3 id="なぜこれが証明になるのか">なぜこれが証明になるのか</h3>
-<ul>
-<li>$z = r +ew \mod q$</li>
-<li>$a = g^r \mod p$</li>
-<li>$y = g^w \mod p$</li>
-</ul>
-<p>$g^z = g^{r+ew} = g^r * g^{ew}$ だった．
+<!doctype html><html lang=ja><head><meta charset=UTF-8><meta name=viewport content="width=device-width,initial-scale=1"><title>ゼロ知識証明 1 - 検品</title><meta name=description content="検品"><link rel=icon href=/favicon.svg type=image/svg+xml><link rel=preconnect href=https://fonts.googleapis.com><link rel=preconnect href=https://fonts.gstatic.com crossorigin><link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500&family=WDXL+Lubrifont+JP+N&display=swap" rel=stylesheet><link rel=stylesheet href=/css/main.min.bcc8f3dc1119bc466ef88a13eb847ca9e49569abe90eb19d7f8dba6234b6fb2b.css integrity="sha256-vMjz3BEZvEZu+IoT64R8qeSVaavpDrGdf426YjS2+ys="><link rel=stylesheet href=https://cdn.jsdelivr.net/npm/katex@0.16.22/dist/katex.min.css integrity=sha384-5TcZemv2l/9On385z///+d7MSYlvIEw9FuZTIdZ14vJLqWphw7e7ZPuOiCHJcFCP crossorigin=anonymous><script defer src=https://cdn.jsdelivr.net/npm/katex@0.16.22/dist/katex.min.js integrity=sha384-cMkvdD8LoxVzGF/RPUKAcvmm49FQ0oxwDF3BGKtDXcEc+T1b2N+teh/OJfpU0jr6 crossorigin=anonymous></script><script defer src=https://cdn.jsdelivr.net/npm/katex@0.16.22/dist/contrib/auto-render.min.js integrity=sha384-hCXGrW6PitJEwbkoStFjeJxv+fSOOQKOPbJxSfM6G5sWZjAyWhXiTIIAmQqnlLlh crossorigin=anonymous></script><script>document.addEventListener("DOMContentLoaded",function(){renderMathInElement(document.body,{delimiters:[{left:"$$",right:"$$",display:!0},{left:"$",right:"$",display:!1}]})})</script></head><body><div class=sheet><header class=site-header><a class=site-title href=/>検品</a><nav class=site-nav><a href=/portfolio/>about</a>
+<a href=/blogs/ class=current>blogs</a>
+<a href=/gallery/>gallery</a>
+<a href=/links/>links</a>
+<a href=/log/>life log</a></nav></header><main class=content><nav class=toc><p class=toc-label>contents</p><ul><li class=d2><a href=#%e7%9f%a5%e8%ad%98%e3%81%ae%e8%a8%bc%e6%98%8e>知識の証明</a></li><li class=d2><a href=#zkp>ZKP</a></li><li class=d2><a href=#%e3%82%b7%e3%82%b0%e3%83%9e%e3%83%97%e3%83%ad%e3%83%88%e3%82%b3%e3%83%ab-schnorr>シグマプロトコル (Schnorr)</a></li><li class=d2><a href=#%e5%ae%9f%e8%a3%85>実装</a></li></ul></nav><p class=post-date>2023-10-02</p><h1 class=page-title>ゼロ知識証明 1</h1><div class=prose><h2 id=知識の証明>知識の証明</h2><p>主張「Prover はある知識 (秘密情報や解) をもつ」に関して，知識の正しさを証明したい．
+単に主張された事柄が真であることを証明するのは対話証明だが，その知識の証明をすることになる．</p><h2 id=zkp>ZKP</h2><p>ZKP は，その知識を Verifier に開示することなく知識を開示することなく(計算量的に再現不可能な形でのみ)証明したい．
+ZKP は下記を満たす．</p><ul><li>完全性: Prover が正しい知識をもっているなら，正当な手順で証明すれば Verifier はその知識が真実であることを疑いなく信頼できる</li><li>健全性: Prover は，Verifier を騙して偽の主張を真とみなすことはできない</li><li>ゼロ知識: 主張が真か偽の他の情報を Verifer は受け取ることができない</li></ul><h2 id=シグマプロトコル-schnorr>シグマプロトコル (Schnorr)</h2><p>例えば知識 $w$ に関して，$g^w = y \mod p$ となるような $w$ をもっていることを証明したい．</p><ol><li>証明者 P は検証者 V に $a = g^r \mod p$ を送る</li><li>V は P にランダムな $e$ を送る</li><li>P は V に $z = r + ew \mod q$ を送る</li><li>V は $g^z = ay^e \mod p$ であることを確認する</li></ol><p>このとき，公開されているのは大きな素数 $p$，位数 $q$ をもつ部分群の生成元 $g$，公開鍵 $y = g^w \mod p$．</p><h3 id=なぜこれが証明になるのか>なぜこれが証明になるのか</h3><ul><li>$z = r +ew \mod q$</li><li>$a = g^r \mod p$</li><li>$y = g^w \mod p$</li></ul><p>$g^z = g^{r+ew} = g^r * g^{ew}$ だった．
 このとき，$g^z = a * g^e \mod p$ となる．
-証明者 P が本当に $z=r + ew$ を計算できているなら検証者側で $g^z$ が一致する．</p>
-<h2 id="実装">実装</h2>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-python" data-lang="python"><span style="display:flex;"><span><span style="color:#75715e">#!/usr/bin/env python3</span>
-</span></span><span style="display:flex;"><span><span style="color:#f92672">import</span> random
-</span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span>p <span style="color:#f92672">=</span> <span style="color:#ae81ff">467</span>
-</span></span><span style="display:flex;"><span>q <span style="color:#f92672">=</span> <span style="color:#ae81ff">233</span>
-</span></span><span style="display:flex;"><span>g <span style="color:#f92672">=</span> <span style="color:#ae81ff">2</span>
-</span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span><span style="color:#66d9ef">class</span> <span style="color:#a6e22e">Prover</span>:
-</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">def</span> <span style="color:#a6e22e">__init__</span>(self, w):
-</span></span><span style="display:flex;"><span>        self<span style="color:#f92672">.</span>w <span style="color:#f92672">=</span> w
-</span></span><span style="display:flex;"><span>        self<span style="color:#f92672">.</span>r <span style="color:#f92672">=</span> <span style="color:#66d9ef">None</span>
-</span></span><span style="display:flex;"><span>        self<span style="color:#f92672">.</span>a <span style="color:#f92672">=</span> <span style="color:#66d9ef">None</span>
-</span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">def</span> <span style="color:#a6e22e">commit</span>(self):
-</span></span><span style="display:flex;"><span>        self<span style="color:#f92672">.</span>r <span style="color:#f92672">=</span> random<span style="color:#f92672">.</span>randrange(q)
-</span></span><span style="display:flex;"><span>        self<span style="color:#f92672">.</span>a <span style="color:#f92672">=</span> pow(g, self<span style="color:#f92672">.</span>r, p)
-</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">return</span> self<span style="color:#f92672">.</span>a
-</span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">def</span> <span style="color:#a6e22e">respond</span>(self, e):
-</span></span><span style="display:flex;"><span>        z <span style="color:#f92672">=</span> (self<span style="color:#f92672">.</span>r <span style="color:#f92672">+</span> e <span style="color:#f92672">*</span> self<span style="color:#f92672">.</span>w) <span style="color:#f92672">%</span> q
-</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">return</span> z
-</span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span><span style="color:#66d9ef">class</span> <span style="color:#a6e22e">Verifier</span>:
-</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">def</span> <span style="color:#a6e22e">__init__</span>(self):
-</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">pass</span>
-</span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">def</span> <span style="color:#a6e22e">challenge</span>(self):
-</span></span><span style="display:flex;"><span>        e <span style="color:#f92672">=</span> random<span style="color:#f92672">.</span>randrange(q)
-</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">return</span> e
-</span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">def</span> <span style="color:#a6e22e">verify</span>(self, a, y, e, z):
-</span></span><span style="display:flex;"><span>        left <span style="color:#f92672">=</span> pow(g, z, p)
-</span></span><span style="display:flex;"><span>        right <span style="color:#f92672">=</span> (a <span style="color:#f92672">*</span> pow(y, e, p)) <span style="color:#f92672">%</span> p
-</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">return</span> (left <span style="color:#f92672">==</span> right)
-</span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span><span style="color:#66d9ef">def</span> <span style="color:#a6e22e">main</span>():
-</span></span><span style="display:flex;"><span>    print(<span style="color:#e6db74">&#34;=== Schnorr Protocol Demonstration ===&#34;</span>)
-</span></span><span style="display:flex;"><span>    w <span style="color:#f92672">=</span> random<span style="color:#f92672">.</span>randrange(q)
-</span></span><span style="display:flex;"><span>    y <span style="color:#f92672">=</span> pow(g, w, p)
-</span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span>    print(<span style="color:#e6db74">f</span><span style="color:#e6db74">&#34;[Setup] p=</span><span style="color:#e6db74">{</span>p<span style="color:#e6db74">}</span><span style="color:#e6db74">, q=</span><span style="color:#e6db74">{</span>q<span style="color:#e6db74">}</span><span style="color:#e6db74">, g=</span><span style="color:#e6db74">{</span>g<span style="color:#e6db74">}</span><span style="color:#e6db74">&#34;</span>)
-</span></span><span style="display:flex;"><span>    print(<span style="color:#e6db74">f</span><span style="color:#e6db74">&#34;[Setup] Prover&#39;s secret w=</span><span style="color:#e6db74">{</span>w<span style="color:#e6db74">}</span><span style="color:#e6db74">&#34;</span>)
-</span></span><span style="display:flex;"><span>    print(<span style="color:#e6db74">f</span><span style="color:#e6db74">&#34;[Setup] y = g^w mod p = </span><span style="color:#e6db74">{</span>y<span style="color:#e6db74">}</span><span style="color:#e6db74">&#34;</span>)
-</span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span>    prover <span style="color:#f92672">=</span> Prover(w)
-</span></span><span style="display:flex;"><span>    verifier <span style="color:#f92672">=</span> Verifier()
-</span></span><span style="display:flex;"><span>    a <span style="color:#f92672">=</span> prover<span style="color:#f92672">.</span>commit()
-</span></span><span style="display:flex;"><span>    print(<span style="color:#e6db74">f</span><span style="color:#e6db74">&#34;[Prover-&gt;Verifier] a = </span><span style="color:#e6db74">{</span>a<span style="color:#e6db74">}</span><span style="color:#e6db74">&#34;</span>)
-</span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span>    e <span style="color:#f92672">=</span> verifier<span style="color:#f92672">.</span>challenge()
-</span></span><span style="display:flex;"><span>    print(<span style="color:#e6db74">f</span><span style="color:#e6db74">&#34;[Verifier-&gt;Prover] e = </span><span style="color:#e6db74">{</span>e<span style="color:#e6db74">}</span><span style="color:#e6db74">&#34;</span>)
-</span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span>    z <span style="color:#f92672">=</span> prover<span style="color:#f92672">.</span>respond(e)
-</span></span><span style="display:flex;"><span>    print(<span style="color:#e6db74">f</span><span style="color:#e6db74">&#34;[Prover-&gt;Verifier] z = </span><span style="color:#e6db74">{</span>z<span style="color:#e6db74">}</span><span style="color:#e6db74">&#34;</span>)
-</span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span>    check <span style="color:#f92672">=</span> verifier<span style="color:#f92672">.</span>verify(a, y, e, z)
-</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">if</span> check:
-</span></span><span style="display:flex;"><span>        print(<span style="color:#e6db74">&#34;[Verifier] Proof is valid. Prover knows w.&#34;</span>)
-</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">else</span>:
-</span></span><span style="display:flex;"><span>        print(<span style="color:#e6db74">&#34;[Verifier] Invalid proof. Prover might NOT know w.&#34;</span>)
-</span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span><span style="color:#66d9ef">if</span> __name__ <span style="color:#f92672">==</span> <span style="color:#e6db74">&#34;__main__&#34;</span>:
-</span></span><span style="display:flex;"><span>    main()
-</span></span></code></pre></div>
-    </div>
-    <div class="post-footer">
-      <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.22/dist/katex.min.css" integrity="sha384-5TcZemv2l/9On385z///+d7MSYlvIEw9FuZTIdZ14vJLqWphw7e7ZPuOiCHJcFCP" crossorigin="anonymous">
-<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.22/dist/katex.min.js" integrity="sha384-cMkvdD8LoxVzGF/RPUKAcvmm49FQ0oxwDF3BGKtDXcEc+T1b2N+teh/OJfpU0jr6" crossorigin="anonymous"></script>
-<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.22/dist/contrib/auto-render.min.js" integrity="sha384-hCXGrW6PitJEwbkoStFjeJxv+fSOOQKOPbJxSfM6G5sWZjAyWhXiTIIAmQqnlLlh" crossorigin="anonymous"></script>
-<script>
-  document.addEventListener("DOMContentLoaded", function() {
-    renderMathInElement(document.body, {delimiters: [
-      {left: "$$", right: "$$", display: true},
-      {left: "$", right: "$", display: false}]
-    });
-  });
-</script>
-      
-    </div>
-  </article>
-
-    </main>
-    <footer class="site-footer">
-      <div class="site-footer-inner">
-        <p class="site-footer-memo">最近は颯も好き ／ 内容の正確性は保証していません🐶</p>
-        <div class="site-footer-row">
-          <span>© side-realms All rights reserved.</span>
-          <span class="site-footer-social">
-            
-            <a href="https://github.com" target="_blank" rel="noreferrer noopener me">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-github">
-  <title>Github</title>
-  <path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"></path>
-</svg>
-            </a>
-            
-          </span>
-        </div>
-      </div>
-    </footer>
-  </body>
-</html>
+証明者 P が本当に $z=r + ew$ を計算できているなら検証者側で $g^z$ が一致する．</p><h2 id=実装>実装</h2><div class=highlight><pre tabindex=0 style=color:#e6edf3;background-color:#0d1117;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-python data-lang=python><span style=display:flex><span><span style=color:#8b949e;font-style:italic>#!/usr/bin/env python3</span>
+</span></span><span style=display:flex><span><span style=color:#ff7b72>import</span> <span style=color:#ff7b72>random</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>p <span style=color:#ff7b72;font-weight:700>=</span> <span style=color:#a5d6ff>467</span>
+</span></span><span style=display:flex><span>q <span style=color:#ff7b72;font-weight:700>=</span> <span style=color:#a5d6ff>233</span>
+</span></span><span style=display:flex><span>g <span style=color:#ff7b72;font-weight:700>=</span> <span style=color:#a5d6ff>2</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#ff7b72>class</span> <span style=color:#f0883e;font-weight:700>Prover</span>:
+</span></span><span style=display:flex><span>    <span style=color:#ff7b72>def</span> <span style=color:#d2a8ff;font-weight:700>__init__</span>(self, w):
+</span></span><span style=display:flex><span>        self<span style=color:#ff7b72;font-weight:700>.</span>w <span style=color:#ff7b72;font-weight:700>=</span> w
+</span></span><span style=display:flex><span>        self<span style=color:#ff7b72;font-weight:700>.</span>r <span style=color:#ff7b72;font-weight:700>=</span> <span style=color:#79c0ff>None</span>
+</span></span><span style=display:flex><span>        self<span style=color:#ff7b72;font-weight:700>.</span>a <span style=color:#ff7b72;font-weight:700>=</span> <span style=color:#79c0ff>None</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>    <span style=color:#ff7b72>def</span> <span style=color:#d2a8ff;font-weight:700>commit</span>(self):
+</span></span><span style=display:flex><span>        self<span style=color:#ff7b72;font-weight:700>.</span>r <span style=color:#ff7b72;font-weight:700>=</span> random<span style=color:#ff7b72;font-weight:700>.</span>randrange(q)
+</span></span><span style=display:flex><span>        self<span style=color:#ff7b72;font-weight:700>.</span>a <span style=color:#ff7b72;font-weight:700>=</span> pow(g, self<span style=color:#ff7b72;font-weight:700>.</span>r, p)
+</span></span><span style=display:flex><span>        <span style=color:#ff7b72>return</span> self<span style=color:#ff7b72;font-weight:700>.</span>a
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>    <span style=color:#ff7b72>def</span> <span style=color:#d2a8ff;font-weight:700>respond</span>(self, e):
+</span></span><span style=display:flex><span>        z <span style=color:#ff7b72;font-weight:700>=</span> (self<span style=color:#ff7b72;font-weight:700>.</span>r <span style=color:#ff7b72;font-weight:700>+</span> e <span style=color:#ff7b72;font-weight:700>*</span> self<span style=color:#ff7b72;font-weight:700>.</span>w) <span style=color:#ff7b72;font-weight:700>%</span> q
+</span></span><span style=display:flex><span>        <span style=color:#ff7b72>return</span> z
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#ff7b72>class</span> <span style=color:#f0883e;font-weight:700>Verifier</span>:
+</span></span><span style=display:flex><span>    <span style=color:#ff7b72>def</span> <span style=color:#d2a8ff;font-weight:700>__init__</span>(self):
+</span></span><span style=display:flex><span>        <span style=color:#ff7b72>pass</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>    <span style=color:#ff7b72>def</span> <span style=color:#d2a8ff;font-weight:700>challenge</span>(self):
+</span></span><span style=display:flex><span>        e <span style=color:#ff7b72;font-weight:700>=</span> random<span style=color:#ff7b72;font-weight:700>.</span>randrange(q)
+</span></span><span style=display:flex><span>        <span style=color:#ff7b72>return</span> e
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>    <span style=color:#ff7b72>def</span> <span style=color:#d2a8ff;font-weight:700>verify</span>(self, a, y, e, z):
+</span></span><span style=display:flex><span>        left <span style=color:#ff7b72;font-weight:700>=</span> pow(g, z, p)
+</span></span><span style=display:flex><span>        right <span style=color:#ff7b72;font-weight:700>=</span> (a <span style=color:#ff7b72;font-weight:700>*</span> pow(y, e, p)) <span style=color:#ff7b72;font-weight:700>%</span> p
+</span></span><span style=display:flex><span>        <span style=color:#ff7b72>return</span> (left <span style=color:#ff7b72;font-weight:700>==</span> right)
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#ff7b72>def</span> <span style=color:#d2a8ff;font-weight:700>main</span>():
+</span></span><span style=display:flex><span>    print(<span style=color:#a5d6ff>&#34;=== Schnorr Protocol Demonstration ===&#34;</span>)
+</span></span><span style=display:flex><span>    w <span style=color:#ff7b72;font-weight:700>=</span> random<span style=color:#ff7b72;font-weight:700>.</span>randrange(q)
+</span></span><span style=display:flex><span>    y <span style=color:#ff7b72;font-weight:700>=</span> pow(g, w, p)
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>    print(<span style=color:#79c0ff>f</span><span style=color:#a5d6ff>&#34;[Setup] p=</span><span style=color:#a5d6ff>{</span>p<span style=color:#a5d6ff>}</span><span style=color:#a5d6ff>, q=</span><span style=color:#a5d6ff>{</span>q<span style=color:#a5d6ff>}</span><span style=color:#a5d6ff>, g=</span><span style=color:#a5d6ff>{</span>g<span style=color:#a5d6ff>}</span><span style=color:#a5d6ff>&#34;</span>)
+</span></span><span style=display:flex><span>    print(<span style=color:#79c0ff>f</span><span style=color:#a5d6ff>&#34;[Setup] Prover&#39;s secret w=</span><span style=color:#a5d6ff>{</span>w<span style=color:#a5d6ff>}</span><span style=color:#a5d6ff>&#34;</span>)
+</span></span><span style=display:flex><span>    print(<span style=color:#79c0ff>f</span><span style=color:#a5d6ff>&#34;[Setup] y = g^w mod p = </span><span style=color:#a5d6ff>{</span>y<span style=color:#a5d6ff>}</span><span style=color:#a5d6ff>&#34;</span>)
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>    prover <span style=color:#ff7b72;font-weight:700>=</span> Prover(w)
+</span></span><span style=display:flex><span>    verifier <span style=color:#ff7b72;font-weight:700>=</span> Verifier()
+</span></span><span style=display:flex><span>    a <span style=color:#ff7b72;font-weight:700>=</span> prover<span style=color:#ff7b72;font-weight:700>.</span>commit()
+</span></span><span style=display:flex><span>    print(<span style=color:#79c0ff>f</span><span style=color:#a5d6ff>&#34;[Prover-&gt;Verifier] a = </span><span style=color:#a5d6ff>{</span>a<span style=color:#a5d6ff>}</span><span style=color:#a5d6ff>&#34;</span>)
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>    e <span style=color:#ff7b72;font-weight:700>=</span> verifier<span style=color:#ff7b72;font-weight:700>.</span>challenge()
+</span></span><span style=display:flex><span>    print(<span style=color:#79c0ff>f</span><span style=color:#a5d6ff>&#34;[Verifier-&gt;Prover] e = </span><span style=color:#a5d6ff>{</span>e<span style=color:#a5d6ff>}</span><span style=color:#a5d6ff>&#34;</span>)
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>    z <span style=color:#ff7b72;font-weight:700>=</span> prover<span style=color:#ff7b72;font-weight:700>.</span>respond(e)
+</span></span><span style=display:flex><span>    print(<span style=color:#79c0ff>f</span><span style=color:#a5d6ff>&#34;[Prover-&gt;Verifier] z = </span><span style=color:#a5d6ff>{</span>z<span style=color:#a5d6ff>}</span><span style=color:#a5d6ff>&#34;</span>)
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>    check <span style=color:#ff7b72;font-weight:700>=</span> verifier<span style=color:#ff7b72;font-weight:700>.</span>verify(a, y, e, z)
+</span></span><span style=display:flex><span>    <span style=color:#ff7b72>if</span> check:
+</span></span><span style=display:flex><span>        print(<span style=color:#a5d6ff>&#34;[Verifier] Proof is valid. Prover knows w.&#34;</span>)
+</span></span><span style=display:flex><span>    <span style=color:#ff7b72>else</span>:
+</span></span><span style=display:flex><span>        print(<span style=color:#a5d6ff>&#34;[Verifier] Invalid proof. Prover might NOT know w.&#34;</span>)
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#ff7b72>if</span> <span style=color:#79c0ff>__name__</span> <span style=color:#ff7b72;font-weight:700>==</span> <span style=color:#a5d6ff>&#34;__main__&#34;</span>:
+</span></span><span style=display:flex><span>    main()
+</span></span></code></pre></div></div><a class=backlink href=/blogs/>← blogs</a></main></div></body></html>

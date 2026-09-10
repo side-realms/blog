@@ -1,301 +1,213 @@
-<!doctype html>
-<html lang="ja-jp">
-  <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Implement small shell with fork and exec // お茶は綾鷹派</title>
-    <link rel="shortcut icon" href="../../favicon.ico" />
-    <meta name="author" content="KoheiDoi" />
-    <meta name="description" content="" />
-    <link rel="stylesheet" href="../../css/main.min.7ef07f20f1ac3c2ab2cd0f04f24d64b0242cd34a878cbb902a718ecf7e50d7cf.css" />
-    
-  <meta name="twitter:card" content="summary">
-  <meta name="twitter:title" content="Implement small shell with fork and exec">
-  <meta name="twitter:description" content="小さなシェルを実装する． シェルとしてのループを実行中に，標準入力からコマンドが入ると fork() して子プロセスを exec() で塗り替える
-// implementation for shell with fork and exec #include &lt;stdio.h&gt; #include &lt;stdlib.h&gt; #include &lt;string.h&gt; #include &lt;unistd.h&gt; #include &lt;sys/wait.h&gt; #include &lt;sys/types.h&gt; #define MAX_ARGS 100 void myexec(char *input){ char *args[MAX_ARGS]; int arg_count = 0; char *p = strtok(input, &#34; \t\n&#34;); while(p != NULL &amp;&amp; arg_count &lt; MAX_ARGS){ args[arg_count&#43;&#43;] = p; p = strtok(NULL, &#34; \t\n&#34;); } args[arg_count] = NULL; if(arg_count == 0){ return; } pid_t pid = fork(); if(pid &lt; 0){ perror(&#34;fork&#34;); exit(1); } if(pid == 0){ // child int err; err = execvp(args[0], args); if(err &lt; 0){ perror(&#34;execvp&#34;); exit(1); } }else{ // parent int status; waitpid(pid, &amp;status, 0); } } int main(){ char buf[1024]; printf(&#34;---- my shell ----\n&#34;); while(1){ printf(&#34;myshell&gt; &#34;); fflush(stdout); if(fgets(buf, sizeof(buf), stdin) == NULL){ break; } if(strncmp(buf, &#34;exit&#34;, 4) == 0 &amp;&amp; buf[4] == &#39;\n&#39;){ break; } myexec(buf); } printf(&#34;Good Bye\n&#34;); exit(0); } 実行するとこんな感じ">
-
-    <meta property="og:url" content="https://side-realms.dev/tech/linux5/">
-  <meta property="og:site_name" content="お茶は綾鷹派">
-  <meta property="og:title" content="Implement small shell with fork and exec">
-  <meta property="og:description" content="小さなシェルを実装する． シェルとしてのループを実行中に，標準入力からコマンドが入ると fork() して子プロセスを exec() で塗り替える
-// implementation for shell with fork and exec #include &lt;stdio.h&gt; #include &lt;stdlib.h&gt; #include &lt;string.h&gt; #include &lt;unistd.h&gt; #include &lt;sys/wait.h&gt; #include &lt;sys/types.h&gt; #define MAX_ARGS 100 void myexec(char *input){ char *args[MAX_ARGS]; int arg_count = 0; char *p = strtok(input, &#34; \t\n&#34;); while(p != NULL &amp;&amp; arg_count &lt; MAX_ARGS){ args[arg_count&#43;&#43;] = p; p = strtok(NULL, &#34; \t\n&#34;); } args[arg_count] = NULL; if(arg_count == 0){ return; } pid_t pid = fork(); if(pid &lt; 0){ perror(&#34;fork&#34;); exit(1); } if(pid == 0){ // child int err; err = execvp(args[0], args); if(err &lt; 0){ perror(&#34;execvp&#34;); exit(1); } }else{ // parent int status; waitpid(pid, &amp;status, 0); } } int main(){ char buf[1024]; printf(&#34;---- my shell ----\n&#34;); while(1){ printf(&#34;myshell&gt; &#34;); fflush(stdout); if(fgets(buf, sizeof(buf), stdin) == NULL){ break; } if(strncmp(buf, &#34;exit&#34;, 4) == 0 &amp;&amp; buf[4] == &#39;\n&#39;){ break; } myexec(buf); } printf(&#34;Good Bye\n&#34;); exit(0); } 実行するとこんな感じ">
-  <meta property="og:locale" content="ja_jp">
-  <meta property="og:type" content="article">
-    <meta property="article:section" content="tech">
-    <meta property="article:published_time" content="2023-09-25T16:43:36+09:00">
-    <meta property="article:modified_time" content="2023-09-25T16:43:36+09:00">
-
-  </head>
-  <body>
-    <div class="site-spine" aria-hidden="true">
-      <span class="site-spine-title">Implement small shell with fork and exec</span>
-      <span class="site-spine-sub">お茶は綾鷹派</span>
-    </div>
-    <div class="site-ribbon" aria-hidden="true"></div>
-    <header class="site-header">
-      <div class="site-header-inner">
-        <a class="site-brand" href="../../">
-          <img class="site-brand-avatar" src="../../images/avatar.jpg" alt="" />
-          <span>お茶は綾鷹派</span>
-        </a>
-      </div>
-    </header>
-    <main class="app-container">
-      
-  <article class="post">
-    <header class="post-header">
-      <h1 class="post-title">Implement small shell with fork and exec</h1>
-      <div class="post-meta">
-        <div>
-          Sep 25, 2023
-        </div>
-      </div>
-      <hr>
-    </header>
-    <div class="post-content">
-      <p>小さなシェルを実装する．
-シェルとしてのループを実行中に，標準入力からコマンドが入ると fork() して子プロセスを exec() で塗り替える</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-C" data-lang="C"><span style="display:flex;"><span><span style="color:#75715e">// implementation for shell with fork and exec
-</span></span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span><span style="color:#75715e">#include</span> <span style="color:#75715e">&lt;stdio.h&gt;</span><span style="color:#75715e">
-</span></span></span><span style="display:flex;"><span><span style="color:#75715e">#include</span> <span style="color:#75715e">&lt;stdlib.h&gt;</span><span style="color:#75715e">
-</span></span></span><span style="display:flex;"><span><span style="color:#75715e">#include</span> <span style="color:#75715e">&lt;string.h&gt;</span><span style="color:#75715e">
-</span></span></span><span style="display:flex;"><span><span style="color:#75715e">#include</span> <span style="color:#75715e">&lt;unistd.h&gt;</span><span style="color:#75715e">
-</span></span></span><span style="display:flex;"><span><span style="color:#75715e">#include</span> <span style="color:#75715e">&lt;sys/wait.h&gt;</span><span style="color:#75715e">
-</span></span></span><span style="display:flex;"><span><span style="color:#75715e">#include</span> <span style="color:#75715e">&lt;sys/types.h&gt;</span><span style="color:#75715e">
-</span></span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span><span style="color:#75715e">#define MAX_ARGS 100
-</span></span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span><span style="color:#66d9ef">void</span> <span style="color:#a6e22e">myexec</span>(<span style="color:#66d9ef">char</span> <span style="color:#f92672">*</span>input){
-</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">char</span> <span style="color:#f92672">*</span>args[MAX_ARGS];
-</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">int</span> arg_count <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>;
-</span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">char</span> <span style="color:#f92672">*</span>p <span style="color:#f92672">=</span> <span style="color:#a6e22e">strtok</span>(input, <span style="color:#e6db74">&#34; </span><span style="color:#ae81ff">\t\n</span><span style="color:#e6db74">&#34;</span>);
-</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">while</span>(p <span style="color:#f92672">!=</span> NULL <span style="color:#f92672">&amp;&amp;</span> arg_count <span style="color:#f92672">&lt;</span> MAX_ARGS){
-</span></span><span style="display:flex;"><span>        args[arg_count<span style="color:#f92672">++</span>] <span style="color:#f92672">=</span> p;
-</span></span><span style="display:flex;"><span>        p <span style="color:#f92672">=</span> <span style="color:#a6e22e">strtok</span>(NULL, <span style="color:#e6db74">&#34; </span><span style="color:#ae81ff">\t\n</span><span style="color:#e6db74">&#34;</span>);
-</span></span><span style="display:flex;"><span>    }
-</span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span>    args[arg_count] <span style="color:#f92672">=</span> NULL;
-</span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">if</span>(arg_count <span style="color:#f92672">==</span> <span style="color:#ae81ff">0</span>){
-</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">return</span>;
-</span></span><span style="display:flex;"><span>    }
-</span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">pid_t</span> pid <span style="color:#f92672">=</span> <span style="color:#a6e22e">fork</span>();
-</span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">if</span>(pid <span style="color:#f92672">&lt;</span> <span style="color:#ae81ff">0</span>){
-</span></span><span style="display:flex;"><span>        <span style="color:#a6e22e">perror</span>(<span style="color:#e6db74">&#34;fork&#34;</span>);
-</span></span><span style="display:flex;"><span>        <span style="color:#a6e22e">exit</span>(<span style="color:#ae81ff">1</span>);
-</span></span><span style="display:flex;"><span>    }
-</span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">if</span>(pid <span style="color:#f92672">==</span> <span style="color:#ae81ff">0</span>){ <span style="color:#75715e">// child 
-</span></span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">int</span> err;
-</span></span><span style="display:flex;"><span>        err <span style="color:#f92672">=</span> <span style="color:#a6e22e">execvp</span>(args[<span style="color:#ae81ff">0</span>], args);
-</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">if</span>(err <span style="color:#f92672">&lt;</span> <span style="color:#ae81ff">0</span>){
-</span></span><span style="display:flex;"><span>            <span style="color:#a6e22e">perror</span>(<span style="color:#e6db74">&#34;execvp&#34;</span>);
-</span></span><span style="display:flex;"><span>            <span style="color:#a6e22e">exit</span>(<span style="color:#ae81ff">1</span>);
-</span></span><span style="display:flex;"><span>        } 
-</span></span><span style="display:flex;"><span>    }<span style="color:#66d9ef">else</span>{ <span style="color:#75715e">// parent
-</span></span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">int</span> status;
-</span></span><span style="display:flex;"><span>        <span style="color:#a6e22e">waitpid</span>(pid, <span style="color:#f92672">&amp;</span>status, <span style="color:#ae81ff">0</span>);
-</span></span><span style="display:flex;"><span>    }
-</span></span><span style="display:flex;"><span>}
-</span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span><span style="color:#66d9ef">int</span> <span style="color:#a6e22e">main</span>(){
-</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">char</span> buf[<span style="color:#ae81ff">1024</span>];
-</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">printf</span>(<span style="color:#e6db74">&#34;---- my shell ----</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>);
-</span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">while</span>(<span style="color:#ae81ff">1</span>){
-</span></span><span style="display:flex;"><span>        <span style="color:#a6e22e">printf</span>(<span style="color:#e6db74">&#34;myshell&gt; &#34;</span>);
-</span></span><span style="display:flex;"><span>        <span style="color:#a6e22e">fflush</span>(stdout);
-</span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">if</span>(<span style="color:#a6e22e">fgets</span>(buf, <span style="color:#66d9ef">sizeof</span>(buf), stdin) <span style="color:#f92672">==</span> NULL){
-</span></span><span style="display:flex;"><span>            <span style="color:#66d9ef">break</span>;
-</span></span><span style="display:flex;"><span>        }
-</span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">if</span>(<span style="color:#a6e22e">strncmp</span>(buf, <span style="color:#e6db74">&#34;exit&#34;</span>, <span style="color:#ae81ff">4</span>) <span style="color:#f92672">==</span> <span style="color:#ae81ff">0</span> <span style="color:#f92672">&amp;&amp;</span> buf[<span style="color:#ae81ff">4</span>] <span style="color:#f92672">==</span> <span style="color:#e6db74">&#39;\n&#39;</span>){
-</span></span><span style="display:flex;"><span>            <span style="color:#66d9ef">break</span>;
-</span></span><span style="display:flex;"><span>        }
-</span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span>        <span style="color:#a6e22e">myexec</span>(buf);
-</span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span>    }
-</span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">printf</span>(<span style="color:#e6db74">&#34;Good Bye</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>);
-</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">exit</span>(<span style="color:#ae81ff">0</span>);
-</span></span><span style="display:flex;"><span>}
-</span></span></code></pre></div><p>実行するとこんな感じ</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-sh" data-lang="sh"><span style="display:flex;"><span>lubuntu@lubuntu-virtualbox:~/linux_tutorial$ ./myshell
-</span></span><span style="display:flex;"><span>---- my shell ----
-</span></span><span style="display:flex;"><span>myshell&gt; ls
-</span></span><span style="display:flex;"><span>grep.c  head  mycat  mycat.c  mygrep  myshell  myshell.c  t2.txt  t.txt
-</span></span><span style="display:flex;"><span>myshell&gt; hello
-</span></span><span style="display:flex;"><span>execvp: No such file or directory
-</span></span><span style="display:flex;"><span>myshell&gt; pwd
-</span></span><span style="display:flex;"><span>/home/lubuntu/linux_tutorial
-</span></span><span style="display:flex;"><span>myshell&gt; exit
-</span></span><span style="display:flex;"><span>Good Bye
-</span></span></code></pre></div><p>execvp のエラーが変だけどいっか．．．</p>
-<p>次にリダイレクトを実装する．
+<!doctype html><html lang=ja><head><meta charset=UTF-8><meta name=viewport content="width=device-width,initial-scale=1"><title>Implement small shell with fork and exec - 検品</title><meta name=description content="検品"><link rel=icon href=/favicon.svg type=image/svg+xml><link rel=preconnect href=https://fonts.googleapis.com><link rel=preconnect href=https://fonts.gstatic.com crossorigin><link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500&family=WDXL+Lubrifont+JP+N&display=swap" rel=stylesheet><link rel=stylesheet href=/css/main.min.bcc8f3dc1119bc466ef88a13eb847ca9e49569abe90eb19d7f8dba6234b6fb2b.css integrity="sha256-vMjz3BEZvEZu+IoT64R8qeSVaavpDrGdf426YjS2+ys="></head><body><div class=sheet><header class=site-header><a class=site-title href=/>検品</a><nav class=site-nav><a href=/portfolio/>about</a>
+<a href=/blogs/ class=current>blogs</a>
+<a href=/gallery/>gallery</a>
+<a href=/links/>links</a>
+<a href=/log/>life log</a></nav></header><main class=content><p class=post-date>2023-09-25</p><h1 class=page-title>Implement small shell with fork and exec</h1><div class=prose><p>小さなシェルを実装する．
+シェルとしてのループを実行中に，標準入力からコマンドが入ると fork() して子プロセスを exec() で塗り替える</p><div class=highlight><pre tabindex=0 style=color:#e6edf3;background-color:#0d1117;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-C data-lang=C><span style=display:flex><span><span style=color:#8b949e;font-style:italic>// implementation for shell with fork and exec
+</span></span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#8b949e;font-weight:700;font-style:italic>#include</span> <span style=color:#8b949e;font-weight:700;font-style:italic>&lt;stdio.h&gt;</span><span style=color:#8b949e;font-weight:700;font-style:italic>
+</span></span></span><span style=display:flex><span><span style=color:#8b949e;font-weight:700;font-style:italic>#include</span> <span style=color:#8b949e;font-weight:700;font-style:italic>&lt;stdlib.h&gt;</span><span style=color:#8b949e;font-weight:700;font-style:italic>
+</span></span></span><span style=display:flex><span><span style=color:#8b949e;font-weight:700;font-style:italic>#include</span> <span style=color:#8b949e;font-weight:700;font-style:italic>&lt;string.h&gt;</span><span style=color:#8b949e;font-weight:700;font-style:italic>
+</span></span></span><span style=display:flex><span><span style=color:#8b949e;font-weight:700;font-style:italic>#include</span> <span style=color:#8b949e;font-weight:700;font-style:italic>&lt;unistd.h&gt;</span><span style=color:#8b949e;font-weight:700;font-style:italic>
+</span></span></span><span style=display:flex><span><span style=color:#8b949e;font-weight:700;font-style:italic>#include</span> <span style=color:#8b949e;font-weight:700;font-style:italic>&lt;sys/wait.h&gt;</span><span style=color:#8b949e;font-weight:700;font-style:italic>
+</span></span></span><span style=display:flex><span><span style=color:#8b949e;font-weight:700;font-style:italic>#include</span> <span style=color:#8b949e;font-weight:700;font-style:italic>&lt;sys/types.h&gt;</span><span style=color:#8b949e;font-weight:700;font-style:italic>
+</span></span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#8b949e;font-weight:700;font-style:italic>#define MAX_ARGS 100
+</span></span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#ff7b72>void</span> <span style=color:#d2a8ff;font-weight:700>myexec</span>(<span style=color:#ff7b72>char</span> <span style=color:#ff7b72;font-weight:700>*</span>input){
+</span></span><span style=display:flex><span>    <span style=color:#ff7b72>char</span> <span style=color:#ff7b72;font-weight:700>*</span>args[MAX_ARGS];
+</span></span><span style=display:flex><span>    <span style=color:#ff7b72>int</span> arg_count <span style=color:#ff7b72;font-weight:700>=</span> <span style=color:#a5d6ff>0</span>;
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>    <span style=color:#ff7b72>char</span> <span style=color:#ff7b72;font-weight:700>*</span>p <span style=color:#ff7b72;font-weight:700>=</span> <span style=color:#d2a8ff;font-weight:700>strtok</span>(input, <span style=color:#a5d6ff>&#34; </span><span style=color:#79c0ff>\t\n</span><span style=color:#a5d6ff>&#34;</span>);
+</span></span><span style=display:flex><span>    <span style=color:#ff7b72>while</span>(p <span style=color:#ff7b72;font-weight:700>!=</span> NULL <span style=color:#ff7b72;font-weight:700>&amp;&amp;</span> arg_count <span style=color:#ff7b72;font-weight:700>&lt;</span> MAX_ARGS){
+</span></span><span style=display:flex><span>        args[arg_count<span style=color:#ff7b72;font-weight:700>++</span>] <span style=color:#ff7b72;font-weight:700>=</span> p;
+</span></span><span style=display:flex><span>        p <span style=color:#ff7b72;font-weight:700>=</span> <span style=color:#d2a8ff;font-weight:700>strtok</span>(NULL, <span style=color:#a5d6ff>&#34; </span><span style=color:#79c0ff>\t\n</span><span style=color:#a5d6ff>&#34;</span>);
+</span></span><span style=display:flex><span>    }
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>    args[arg_count] <span style=color:#ff7b72;font-weight:700>=</span> NULL;
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>    <span style=color:#ff7b72>if</span>(arg_count <span style=color:#ff7b72;font-weight:700>==</span> <span style=color:#a5d6ff>0</span>){
+</span></span><span style=display:flex><span>        <span style=color:#ff7b72>return</span>;
+</span></span><span style=display:flex><span>    }
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>    <span style=color:#ff7b72>pid_t</span> pid <span style=color:#ff7b72;font-weight:700>=</span> <span style=color:#d2a8ff;font-weight:700>fork</span>();
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>    <span style=color:#ff7b72>if</span>(pid <span style=color:#ff7b72;font-weight:700>&lt;</span> <span style=color:#a5d6ff>0</span>){
+</span></span><span style=display:flex><span>        <span style=color:#d2a8ff;font-weight:700>perror</span>(<span style=color:#a5d6ff>&#34;fork&#34;</span>);
+</span></span><span style=display:flex><span>        <span style=color:#d2a8ff;font-weight:700>exit</span>(<span style=color:#a5d6ff>1</span>);
+</span></span><span style=display:flex><span>    }
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>    <span style=color:#ff7b72>if</span>(pid <span style=color:#ff7b72;font-weight:700>==</span> <span style=color:#a5d6ff>0</span>){ <span style=color:#8b949e;font-style:italic>// child 
+</span></span></span><span style=display:flex><span>        <span style=color:#ff7b72>int</span> err;
+</span></span><span style=display:flex><span>        err <span style=color:#ff7b72;font-weight:700>=</span> <span style=color:#d2a8ff;font-weight:700>execvp</span>(args[<span style=color:#a5d6ff>0</span>], args);
+</span></span><span style=display:flex><span>        <span style=color:#ff7b72>if</span>(err <span style=color:#ff7b72;font-weight:700>&lt;</span> <span style=color:#a5d6ff>0</span>){
+</span></span><span style=display:flex><span>            <span style=color:#d2a8ff;font-weight:700>perror</span>(<span style=color:#a5d6ff>&#34;execvp&#34;</span>);
+</span></span><span style=display:flex><span>            <span style=color:#d2a8ff;font-weight:700>exit</span>(<span style=color:#a5d6ff>1</span>);
+</span></span><span style=display:flex><span>        } 
+</span></span><span style=display:flex><span>    }<span style=color:#ff7b72>else</span>{ <span style=color:#8b949e;font-style:italic>// parent
+</span></span></span><span style=display:flex><span>        <span style=color:#ff7b72>int</span> status;
+</span></span><span style=display:flex><span>        <span style=color:#d2a8ff;font-weight:700>waitpid</span>(pid, <span style=color:#ff7b72;font-weight:700>&amp;</span>status, <span style=color:#a5d6ff>0</span>);
+</span></span><span style=display:flex><span>    }
+</span></span><span style=display:flex><span>}
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#ff7b72>int</span> <span style=color:#d2a8ff;font-weight:700>main</span>(){
+</span></span><span style=display:flex><span>    <span style=color:#ff7b72>char</span> buf[<span style=color:#a5d6ff>1024</span>];
+</span></span><span style=display:flex><span>    <span style=color:#d2a8ff;font-weight:700>printf</span>(<span style=color:#a5d6ff>&#34;---- my shell ----</span><span style=color:#79c0ff>\n</span><span style=color:#a5d6ff>&#34;</span>);
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>    <span style=color:#ff7b72>while</span>(<span style=color:#a5d6ff>1</span>){
+</span></span><span style=display:flex><span>        <span style=color:#d2a8ff;font-weight:700>printf</span>(<span style=color:#a5d6ff>&#34;myshell&gt; &#34;</span>);
+</span></span><span style=display:flex><span>        <span style=color:#d2a8ff;font-weight:700>fflush</span>(stdout);
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>        <span style=color:#ff7b72>if</span>(<span style=color:#d2a8ff;font-weight:700>fgets</span>(buf, <span style=color:#ff7b72>sizeof</span>(buf), stdin) <span style=color:#ff7b72;font-weight:700>==</span> NULL){
+</span></span><span style=display:flex><span>            <span style=color:#ff7b72>break</span>;
+</span></span><span style=display:flex><span>        }
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>        <span style=color:#ff7b72>if</span>(<span style=color:#d2a8ff;font-weight:700>strncmp</span>(buf, <span style=color:#a5d6ff>&#34;exit&#34;</span>, <span style=color:#a5d6ff>4</span>) <span style=color:#ff7b72;font-weight:700>==</span> <span style=color:#a5d6ff>0</span> <span style=color:#ff7b72;font-weight:700>&amp;&amp;</span> buf[<span style=color:#a5d6ff>4</span>] <span style=color:#ff7b72;font-weight:700>==</span> <span style=color:#a5d6ff>&#39;\n&#39;</span>){
+</span></span><span style=display:flex><span>            <span style=color:#ff7b72>break</span>;
+</span></span><span style=display:flex><span>        }
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>        <span style=color:#d2a8ff;font-weight:700>myexec</span>(buf);
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>    }
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>    <span style=color:#d2a8ff;font-weight:700>printf</span>(<span style=color:#a5d6ff>&#34;Good Bye</span><span style=color:#79c0ff>\n</span><span style=color:#a5d6ff>&#34;</span>);
+</span></span><span style=display:flex><span>    <span style=color:#d2a8ff;font-weight:700>exit</span>(<span style=color:#a5d6ff>0</span>);
+</span></span><span style=display:flex><span>}
+</span></span></code></pre></div><p>実行するとこんな感じ</p><div class=highlight><pre tabindex=0 style=color:#e6edf3;background-color:#0d1117;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-sh data-lang=sh><span style=display:flex><span>lubuntu@lubuntu-virtualbox:~/linux_tutorial$ ./myshell
+</span></span><span style=display:flex><span>---- my shell ----
+</span></span><span style=display:flex><span>myshell&gt; ls
+</span></span><span style=display:flex><span>grep.c  head  mycat  mycat.c  mygrep  myshell  myshell.c  t2.txt  t.txt
+</span></span><span style=display:flex><span>myshell&gt; hello
+</span></span><span style=display:flex><span>execvp: No such file or directory
+</span></span><span style=display:flex><span>myshell&gt; pwd
+</span></span><span style=display:flex><span>/home/lubuntu/linux_tutorial
+</span></span><span style=display:flex><span>myshell&gt; exit
+</span></span><span style=display:flex><span>Good Bye
+</span></span></code></pre></div><p>execvp のエラーが変だけどいっか．．．</p><p>次にリダイレクトを実装する．
 dup2 で標準入力と標準出力のファイルディスクリプタを子プロセスに割り当ててあげる．
-冗長でダサいが暫定的に下記．</p>
-<p>例えば &ldquo;&gt;&rdquo; にぶつかったら，その次に宣言されているファイルを探し，そのファイルディスクリプタを複製する．(<code>dup2(int oldfd, int newfd);</code>)
-これによって，その次のファイルディスクリプタを標準入力に割り当てる．<br>
-oldfd を複製して newfd に割り当てる．
+冗長でダサいが暫定的に下記．</p><p>例えば &ldquo;>&rdquo; にぶつかったら，その次に宣言されているファイルを探し，そのファイルディスクリプタを複製する．(<code>dup2(int oldfd, int newfd);</code>)
+これによって，その次のファイルディスクリプタを標準入力に割り当てる．<br>oldfd を複製して newfd に割り当てる．
 つまり，newfd は oldfd と同じファイルを指す．
 なので，標準出力はその次のファイルディスクリプタを（その fork() 内では）指す．
-これによって，そのコマンドの実行結果はファイルディスクリプタに出力される．</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-C" data-lang="C"><span style="display:flex;"><span><span style="color:#66d9ef">if</span>(pid <span style="color:#f92672">==</span> <span style="color:#ae81ff">0</span>){ <span style="color:#75715e">// child
-</span></span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">for</span>(<span style="color:#66d9ef">int</span> i <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>; i <span style="color:#f92672">&lt;</span> arg_count; i<span style="color:#f92672">++</span>){
-</span></span><span style="display:flex;"><span>            <span style="color:#66d9ef">if</span>(<span style="color:#a6e22e">strncmp</span>(args[i], <span style="color:#e6db74">&#34;&gt;&#34;</span>, <span style="color:#ae81ff">1</span>) <span style="color:#f92672">==</span> <span style="color:#ae81ff">0</span>){
-</span></span><span style="display:flex;"><span>                <span style="color:#66d9ef">int</span> fd <span style="color:#f92672">=</span> <span style="color:#a6e22e">open</span>(args[i <span style="color:#f92672">+</span> <span style="color:#ae81ff">1</span>], O_WRONLY <span style="color:#f92672">|</span> O_CREAT <span style="color:#f92672">|</span> O_TRUNC, <span style="color:#ae81ff">0644</span>);
-</span></span><span style="display:flex;"><span>                <span style="color:#66d9ef">if</span>(fd <span style="color:#f92672">&lt;</span> <span style="color:#ae81ff">0</span>){
-</span></span><span style="display:flex;"><span>                    <span style="color:#a6e22e">perror</span>(<span style="color:#e6db74">&#34;open&#34;</span>);
-</span></span><span style="display:flex;"><span>                    <span style="color:#a6e22e">exit</span>(<span style="color:#ae81ff">1</span>);
-</span></span><span style="display:flex;"><span>                }
-</span></span><span style="display:flex;"><span>                <span style="color:#a6e22e">dup2</span>(fd, STDOUT_FILENO);
-</span></span><span style="display:flex;"><span>                <span style="color:#a6e22e">close</span>(fd);
-</span></span><span style="display:flex;"><span>                args[i] <span style="color:#f92672">=</span> NULL;
-</span></span><span style="display:flex;"><span>                <span style="color:#66d9ef">break</span>;
-</span></span><span style="display:flex;"><span>            }
-</span></span><span style="display:flex;"><span>            <span style="color:#66d9ef">if</span>(<span style="color:#a6e22e">strncmp</span>(args[i], <span style="color:#e6db74">&#34;&gt;&gt;&#34;</span>, <span style="color:#ae81ff">1</span>) <span style="color:#f92672">==</span> <span style="color:#ae81ff">0</span>){
-</span></span><span style="display:flex;"><span>                <span style="color:#66d9ef">int</span> fd <span style="color:#f92672">=</span> <span style="color:#a6e22e">open</span>(args[i <span style="color:#f92672">+</span> <span style="color:#ae81ff">1</span>], O_WRONLY <span style="color:#f92672">|</span> O_CREAT <span style="color:#f92672">|</span> O_APPEND, <span style="color:#ae81ff">0644</span>);
-</span></span><span style="display:flex;"><span>                <span style="color:#66d9ef">if</span>(fd <span style="color:#f92672">&lt;</span> <span style="color:#ae81ff">0</span>){
-</span></span><span style="display:flex;"><span>                    <span style="color:#a6e22e">perror</span>(<span style="color:#e6db74">&#34;open&#34;</span>);
-</span></span><span style="display:flex;"><span>                    <span style="color:#a6e22e">exit</span>(<span style="color:#ae81ff">1</span>);
-</span></span><span style="display:flex;"><span>                }
-</span></span><span style="display:flex;"><span>                <span style="color:#a6e22e">dup2</span>(fd, STDOUT_FILENO);
-</span></span><span style="display:flex;"><span>                <span style="color:#a6e22e">close</span>(fd);
-</span></span><span style="display:flex;"><span>                args[i] <span style="color:#f92672">=</span> NULL;
-</span></span><span style="display:flex;"><span>                <span style="color:#66d9ef">break</span>;
-</span></span><span style="display:flex;"><span>            }
-</span></span><span style="display:flex;"><span>            <span style="color:#66d9ef">if</span>(<span style="color:#a6e22e">strncmp</span>(args[i], <span style="color:#e6db74">&#34;&lt;&#34;</span>, <span style="color:#ae81ff">1</span>) <span style="color:#f92672">==</span> <span style="color:#ae81ff">0</span>){
-</span></span><span style="display:flex;"><span>                <span style="color:#66d9ef">int</span> fd <span style="color:#f92672">=</span> <span style="color:#a6e22e">open</span>(args[i <span style="color:#f92672">+</span> <span style="color:#ae81ff">1</span>], O_RDONLY);
-</span></span><span style="display:flex;"><span>                <span style="color:#66d9ef">if</span>(fd <span style="color:#f92672">&lt;</span> <span style="color:#ae81ff">0</span>){
-</span></span><span style="display:flex;"><span>                    <span style="color:#a6e22e">perror</span>(<span style="color:#e6db74">&#34;open&#34;</span>);
-</span></span><span style="display:flex;"><span>                    <span style="color:#a6e22e">exit</span>(<span style="color:#ae81ff">1</span>);
-</span></span><span style="display:flex;"><span>                }
-</span></span><span style="display:flex;"><span>                <span style="color:#a6e22e">dup2</span>(fd, STDIN_FILENO);
-</span></span><span style="display:flex;"><span>                <span style="color:#a6e22e">close</span>(fd);
-</span></span><span style="display:flex;"><span>                args[i] <span style="color:#f92672">=</span> NULL;
-</span></span><span style="display:flex;"><span>                <span style="color:#66d9ef">break</span>;
-</span></span><span style="display:flex;"><span>            }
-</span></span><span style="display:flex;"><span>        }
-</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">int</span> err;
-</span></span><span style="display:flex;"><span>        err <span style="color:#f92672">=</span> <span style="color:#a6e22e">execvp</span>(args[<span style="color:#ae81ff">0</span>], args);
-</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">if</span>(err <span style="color:#f92672">&lt;</span> <span style="color:#ae81ff">0</span>){
-</span></span><span style="display:flex;"><span>            <span style="color:#a6e22e">perror</span>(<span style="color:#e6db74">&#34;execvp&#34;</span>);
-</span></span><span style="display:flex;"><span>            <span style="color:#a6e22e">exit</span>(<span style="color:#ae81ff">1</span>);
-</span></span><span style="display:flex;"><span>        } 
-</span></span><span style="display:flex;"><span>    }<span style="color:#66d9ef">else</span>{ <span style="color:#75715e">// parent
-</span></span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">int</span> status;
-</span></span><span style="display:flex;"><span>        <span style="color:#a6e22e">waitpid</span>(pid, <span style="color:#f92672">&amp;</span>status, <span style="color:#ae81ff">0</span>);
-</span></span><span style="display:flex;"><span>    }
-</span></span></code></pre></div><div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-sh" data-lang="sh"><span style="display:flex;"><span>lubuntu@lubuntu-virtualbox:~/linux_tutorial$ ./myshell
-</span></span><span style="display:flex;"><span>---- my shell ----
-</span></span><span style="display:flex;"><span>myshell&gt; ls
-</span></span><span style="display:flex;"><span>grep.c  head  mycat  mycat.c  mygrep  myshell  myshell.c  t2.txt  t.txt
-</span></span><span style="display:flex;"><span>myshell&gt; cat mycat.c &gt; tem.txt
-</span></span><span style="display:flex;"><span>myshell&gt; cat tem.txt
-</span></span><span style="display:flex;"><span><span style="color:#75715e">#include &lt;stdio.h&gt;</span>
-</span></span><span style="display:flex;"><span><span style="color:#75715e">#include &lt;sys/types.h&gt;</span>
-</span></span><span style="display:flex;"><span><span style="color:#75715e">#include &lt;sys/stat.h&gt;</span>
-</span></span><span style="display:flex;"><span><span style="color:#75715e">#include &lt;fcntl.h&gt;</span>
-</span></span><span style="display:flex;"><span><span style="color:#75715e">#include &lt;unistd.h&gt;</span>
-</span></span><span style="display:flex;"><span><span style="color:#75715e">#include &lt;stdlib.h&gt;</span>
-</span></span><span style="display:flex;"><span>...
-</span></span></code></pre></div><p>次にパイプを実装する．</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-C" data-lang="C"><span style="display:flex;"><span><span style="color:#66d9ef">void</span> <span style="color:#a6e22e">mypipe</span>(<span style="color:#66d9ef">char</span> <span style="color:#f92672">*</span>input){
-</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">char</span> <span style="color:#f92672">*</span>args[MAX_ARGS];
-</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">int</span> arg_count <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>;
-</span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">char</span> <span style="color:#f92672">*</span>p <span style="color:#f92672">=</span> <span style="color:#a6e22e">strtok</span>(input, <span style="color:#e6db74">&#34;|&#34;</span>);
-</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">while</span>(p <span style="color:#f92672">!=</span> NULL <span style="color:#f92672">&amp;&amp;</span> arg_count <span style="color:#f92672">&lt;</span> MAX_ARGS){
-</span></span><span style="display:flex;"><span>        args[arg_count<span style="color:#f92672">++</span>] <span style="color:#f92672">=</span> p;
-</span></span><span style="display:flex;"><span>        p <span style="color:#f92672">=</span> <span style="color:#a6e22e">strtok</span>(NULL, <span style="color:#e6db74">&#34;|&#34;</span>);
-</span></span><span style="display:flex;"><span>    }
-</span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">int</span> pipefd[<span style="color:#ae81ff">2</span>];
-</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">int</span> fd_in <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>;
-</span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">for</span>(<span style="color:#66d9ef">int</span> i <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>; i <span style="color:#f92672">&lt;</span> arg_count; i<span style="color:#f92672">++</span>){
-</span></span><span style="display:flex;"><span>        <span style="color:#a6e22e">pipe</span>(pipefd);
-</span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">if</span>(<span style="color:#a6e22e">fork</span>() <span style="color:#f92672">==</span> <span style="color:#ae81ff">0</span>){ <span style="color:#75715e">// child
-</span></span></span><span style="display:flex;"><span>            <span style="color:#a6e22e">dup2</span>(fd_in, STDIN_FILENO);
-</span></span><span style="display:flex;"><span>            <span style="color:#66d9ef">if</span>(i <span style="color:#f92672">&lt;</span> arg_count <span style="color:#f92672">-</span> <span style="color:#ae81ff">1</span>){
-</span></span><span style="display:flex;"><span>                <span style="color:#a6e22e">dup2</span>(pipefd[<span style="color:#ae81ff">1</span>], STDOUT_FILENO);
-</span></span><span style="display:flex;"><span>            }
-</span></span><span style="display:flex;"><span>            <span style="color:#a6e22e">close</span>(pipefd[<span style="color:#ae81ff">0</span>]);
-</span></span><span style="display:flex;"><span>            <span style="color:#a6e22e">myexec</span>(args[i]);
-</span></span><span style="display:flex;"><span>            <span style="color:#a6e22e">exit</span>(<span style="color:#ae81ff">0</span>);
-</span></span><span style="display:flex;"><span>        }
-</span></span><span style="display:flex;"><span>        <span style="color:#a6e22e">close</span>(pipefd[<span style="color:#ae81ff">1</span>]);
-</span></span><span style="display:flex;"><span>        fd_in <span style="color:#f92672">=</span> pipefd[<span style="color:#ae81ff">0</span>];
-</span></span><span style="display:flex;"><span>    }
-</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">for</span> (<span style="color:#66d9ef">int</span> i <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>; i <span style="color:#f92672">&lt;</span> arg_count; i<span style="color:#f92672">++</span>){
-</span></span><span style="display:flex;"><span>        <span style="color:#a6e22e">wait</span>(NULL);
-</span></span><span style="display:flex;"><span>    }
-</span></span><span style="display:flex;"><span>}
-</span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span><span style="color:#66d9ef">int</span> <span style="color:#a6e22e">main</span>(){
-</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">char</span> buf[<span style="color:#ae81ff">1024</span>];
-</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">printf</span>(<span style="color:#e6db74">&#34;---- my shell ----</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>);
-</span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">while</span>(<span style="color:#ae81ff">1</span>){
-</span></span><span style="display:flex;"><span>        <span style="color:#a6e22e">printf</span>(<span style="color:#e6db74">&#34;myshell&gt; &#34;</span>);
-</span></span><span style="display:flex;"><span>        <span style="color:#a6e22e">fflush</span>(stdout);
-</span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">if</span>(<span style="color:#a6e22e">fgets</span>(buf, <span style="color:#66d9ef">sizeof</span>(buf), stdin) <span style="color:#f92672">==</span> NULL){
-</span></span><span style="display:flex;"><span>            <span style="color:#66d9ef">break</span>;
-</span></span><span style="display:flex;"><span>        }
-</span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">if</span>(<span style="color:#a6e22e">strncmp</span>(buf, <span style="color:#e6db74">&#34;exit&#34;</span>, <span style="color:#ae81ff">4</span>) <span style="color:#f92672">==</span> <span style="color:#ae81ff">0</span> <span style="color:#f92672">&amp;&amp;</span> buf[<span style="color:#ae81ff">4</span>] <span style="color:#f92672">==</span> <span style="color:#e6db74">&#39;\n&#39;</span>){
-</span></span><span style="display:flex;"><span>            <span style="color:#66d9ef">break</span>;
-</span></span><span style="display:flex;"><span>        }
-</span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">if</span>(<span style="color:#a6e22e">strchr</span>(buf, <span style="color:#e6db74">&#39;|&#39;</span>) <span style="color:#f92672">!=</span> NULL){
-</span></span><span style="display:flex;"><span>            <span style="color:#a6e22e">mypipe</span>(buf);
-</span></span><span style="display:flex;"><span>        }
-</span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span>        <span style="color:#a6e22e">myexec</span>(buf);
-</span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span>    }
-</span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">printf</span>(<span style="color:#e6db74">&#34;Good Bye</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>);
-</span></span><span style="display:flex;"><span>    <span style="color:#a6e22e">exit</span>(<span style="color:#ae81ff">0</span>);
-</span></span><span style="display:flex;"><span>}
+これによって，そのコマンドの実行結果はファイルディスクリプタに出力される．</p><div class=highlight><pre tabindex=0 style=color:#e6edf3;background-color:#0d1117;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-C data-lang=C><span style=display:flex><span><span style=color:#ff7b72>if</span>(pid <span style=color:#ff7b72;font-weight:700>==</span> <span style=color:#a5d6ff>0</span>){ <span style=color:#8b949e;font-style:italic>// child
+</span></span></span><span style=display:flex><span>        <span style=color:#ff7b72>for</span>(<span style=color:#ff7b72>int</span> i <span style=color:#ff7b72;font-weight:700>=</span> <span style=color:#a5d6ff>0</span>; i <span style=color:#ff7b72;font-weight:700>&lt;</span> arg_count; i<span style=color:#ff7b72;font-weight:700>++</span>){
+</span></span><span style=display:flex><span>            <span style=color:#ff7b72>if</span>(<span style=color:#d2a8ff;font-weight:700>strncmp</span>(args[i], <span style=color:#a5d6ff>&#34;&gt;&#34;</span>, <span style=color:#a5d6ff>1</span>) <span style=color:#ff7b72;font-weight:700>==</span> <span style=color:#a5d6ff>0</span>){
+</span></span><span style=display:flex><span>                <span style=color:#ff7b72>int</span> fd <span style=color:#ff7b72;font-weight:700>=</span> <span style=color:#d2a8ff;font-weight:700>open</span>(args[i <span style=color:#ff7b72;font-weight:700>+</span> <span style=color:#a5d6ff>1</span>], O_WRONLY <span style=color:#ff7b72;font-weight:700>|</span> O_CREAT <span style=color:#ff7b72;font-weight:700>|</span> O_TRUNC, <span style=color:#a5d6ff>0644</span>);
+</span></span><span style=display:flex><span>                <span style=color:#ff7b72>if</span>(fd <span style=color:#ff7b72;font-weight:700>&lt;</span> <span style=color:#a5d6ff>0</span>){
+</span></span><span style=display:flex><span>                    <span style=color:#d2a8ff;font-weight:700>perror</span>(<span style=color:#a5d6ff>&#34;open&#34;</span>);
+</span></span><span style=display:flex><span>                    <span style=color:#d2a8ff;font-weight:700>exit</span>(<span style=color:#a5d6ff>1</span>);
+</span></span><span style=display:flex><span>                }
+</span></span><span style=display:flex><span>                <span style=color:#d2a8ff;font-weight:700>dup2</span>(fd, STDOUT_FILENO);
+</span></span><span style=display:flex><span>                <span style=color:#d2a8ff;font-weight:700>close</span>(fd);
+</span></span><span style=display:flex><span>                args[i] <span style=color:#ff7b72;font-weight:700>=</span> NULL;
+</span></span><span style=display:flex><span>                <span style=color:#ff7b72>break</span>;
+</span></span><span style=display:flex><span>            }
+</span></span><span style=display:flex><span>            <span style=color:#ff7b72>if</span>(<span style=color:#d2a8ff;font-weight:700>strncmp</span>(args[i], <span style=color:#a5d6ff>&#34;&gt;&gt;&#34;</span>, <span style=color:#a5d6ff>1</span>) <span style=color:#ff7b72;font-weight:700>==</span> <span style=color:#a5d6ff>0</span>){
+</span></span><span style=display:flex><span>                <span style=color:#ff7b72>int</span> fd <span style=color:#ff7b72;font-weight:700>=</span> <span style=color:#d2a8ff;font-weight:700>open</span>(args[i <span style=color:#ff7b72;font-weight:700>+</span> <span style=color:#a5d6ff>1</span>], O_WRONLY <span style=color:#ff7b72;font-weight:700>|</span> O_CREAT <span style=color:#ff7b72;font-weight:700>|</span> O_APPEND, <span style=color:#a5d6ff>0644</span>);
+</span></span><span style=display:flex><span>                <span style=color:#ff7b72>if</span>(fd <span style=color:#ff7b72;font-weight:700>&lt;</span> <span style=color:#a5d6ff>0</span>){
+</span></span><span style=display:flex><span>                    <span style=color:#d2a8ff;font-weight:700>perror</span>(<span style=color:#a5d6ff>&#34;open&#34;</span>);
+</span></span><span style=display:flex><span>                    <span style=color:#d2a8ff;font-weight:700>exit</span>(<span style=color:#a5d6ff>1</span>);
+</span></span><span style=display:flex><span>                }
+</span></span><span style=display:flex><span>                <span style=color:#d2a8ff;font-weight:700>dup2</span>(fd, STDOUT_FILENO);
+</span></span><span style=display:flex><span>                <span style=color:#d2a8ff;font-weight:700>close</span>(fd);
+</span></span><span style=display:flex><span>                args[i] <span style=color:#ff7b72;font-weight:700>=</span> NULL;
+</span></span><span style=display:flex><span>                <span style=color:#ff7b72>break</span>;
+</span></span><span style=display:flex><span>            }
+</span></span><span style=display:flex><span>            <span style=color:#ff7b72>if</span>(<span style=color:#d2a8ff;font-weight:700>strncmp</span>(args[i], <span style=color:#a5d6ff>&#34;&lt;&#34;</span>, <span style=color:#a5d6ff>1</span>) <span style=color:#ff7b72;font-weight:700>==</span> <span style=color:#a5d6ff>0</span>){
+</span></span><span style=display:flex><span>                <span style=color:#ff7b72>int</span> fd <span style=color:#ff7b72;font-weight:700>=</span> <span style=color:#d2a8ff;font-weight:700>open</span>(args[i <span style=color:#ff7b72;font-weight:700>+</span> <span style=color:#a5d6ff>1</span>], O_RDONLY);
+</span></span><span style=display:flex><span>                <span style=color:#ff7b72>if</span>(fd <span style=color:#ff7b72;font-weight:700>&lt;</span> <span style=color:#a5d6ff>0</span>){
+</span></span><span style=display:flex><span>                    <span style=color:#d2a8ff;font-weight:700>perror</span>(<span style=color:#a5d6ff>&#34;open&#34;</span>);
+</span></span><span style=display:flex><span>                    <span style=color:#d2a8ff;font-weight:700>exit</span>(<span style=color:#a5d6ff>1</span>);
+</span></span><span style=display:flex><span>                }
+</span></span><span style=display:flex><span>                <span style=color:#d2a8ff;font-weight:700>dup2</span>(fd, STDIN_FILENO);
+</span></span><span style=display:flex><span>                <span style=color:#d2a8ff;font-weight:700>close</span>(fd);
+</span></span><span style=display:flex><span>                args[i] <span style=color:#ff7b72;font-weight:700>=</span> NULL;
+</span></span><span style=display:flex><span>                <span style=color:#ff7b72>break</span>;
+</span></span><span style=display:flex><span>            }
+</span></span><span style=display:flex><span>        }
+</span></span><span style=display:flex><span>        <span style=color:#ff7b72>int</span> err;
+</span></span><span style=display:flex><span>        err <span style=color:#ff7b72;font-weight:700>=</span> <span style=color:#d2a8ff;font-weight:700>execvp</span>(args[<span style=color:#a5d6ff>0</span>], args);
+</span></span><span style=display:flex><span>        <span style=color:#ff7b72>if</span>(err <span style=color:#ff7b72;font-weight:700>&lt;</span> <span style=color:#a5d6ff>0</span>){
+</span></span><span style=display:flex><span>            <span style=color:#d2a8ff;font-weight:700>perror</span>(<span style=color:#a5d6ff>&#34;execvp&#34;</span>);
+</span></span><span style=display:flex><span>            <span style=color:#d2a8ff;font-weight:700>exit</span>(<span style=color:#a5d6ff>1</span>);
+</span></span><span style=display:flex><span>        } 
+</span></span><span style=display:flex><span>    }<span style=color:#ff7b72>else</span>{ <span style=color:#8b949e;font-style:italic>// parent
+</span></span></span><span style=display:flex><span>        <span style=color:#ff7b72>int</span> status;
+</span></span><span style=display:flex><span>        <span style=color:#d2a8ff;font-weight:700>waitpid</span>(pid, <span style=color:#ff7b72;font-weight:700>&amp;</span>status, <span style=color:#a5d6ff>0</span>);
+</span></span><span style=display:flex><span>    }
+</span></span></code></pre></div><div class=highlight><pre tabindex=0 style=color:#e6edf3;background-color:#0d1117;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-sh data-lang=sh><span style=display:flex><span>lubuntu@lubuntu-virtualbox:~/linux_tutorial$ ./myshell
+</span></span><span style=display:flex><span>---- my shell ----
+</span></span><span style=display:flex><span>myshell&gt; ls
+</span></span><span style=display:flex><span>grep.c  head  mycat  mycat.c  mygrep  myshell  myshell.c  t2.txt  t.txt
+</span></span><span style=display:flex><span>myshell&gt; cat mycat.c &gt; tem.txt
+</span></span><span style=display:flex><span>myshell&gt; cat tem.txt
+</span></span><span style=display:flex><span><span style=color:#8b949e;font-style:italic>#include &lt;stdio.h&gt;</span>
+</span></span><span style=display:flex><span><span style=color:#8b949e;font-style:italic>#include &lt;sys/types.h&gt;</span>
+</span></span><span style=display:flex><span><span style=color:#8b949e;font-style:italic>#include &lt;sys/stat.h&gt;</span>
+</span></span><span style=display:flex><span><span style=color:#8b949e;font-style:italic>#include &lt;fcntl.h&gt;</span>
+</span></span><span style=display:flex><span><span style=color:#8b949e;font-style:italic>#include &lt;unistd.h&gt;</span>
+</span></span><span style=display:flex><span><span style=color:#8b949e;font-style:italic>#include &lt;stdlib.h&gt;</span>
+</span></span><span style=display:flex><span>...
+</span></span></code></pre></div><p>次にパイプを実装する．</p><div class=highlight><pre tabindex=0 style=color:#e6edf3;background-color:#0d1117;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-C data-lang=C><span style=display:flex><span><span style=color:#ff7b72>void</span> <span style=color:#d2a8ff;font-weight:700>mypipe</span>(<span style=color:#ff7b72>char</span> <span style=color:#ff7b72;font-weight:700>*</span>input){
+</span></span><span style=display:flex><span>    <span style=color:#ff7b72>char</span> <span style=color:#ff7b72;font-weight:700>*</span>args[MAX_ARGS];
+</span></span><span style=display:flex><span>    <span style=color:#ff7b72>int</span> arg_count <span style=color:#ff7b72;font-weight:700>=</span> <span style=color:#a5d6ff>0</span>;
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>    <span style=color:#ff7b72>char</span> <span style=color:#ff7b72;font-weight:700>*</span>p <span style=color:#ff7b72;font-weight:700>=</span> <span style=color:#d2a8ff;font-weight:700>strtok</span>(input, <span style=color:#a5d6ff>&#34;|&#34;</span>);
+</span></span><span style=display:flex><span>    <span style=color:#ff7b72>while</span>(p <span style=color:#ff7b72;font-weight:700>!=</span> NULL <span style=color:#ff7b72;font-weight:700>&amp;&amp;</span> arg_count <span style=color:#ff7b72;font-weight:700>&lt;</span> MAX_ARGS){
+</span></span><span style=display:flex><span>        args[arg_count<span style=color:#ff7b72;font-weight:700>++</span>] <span style=color:#ff7b72;font-weight:700>=</span> p;
+</span></span><span style=display:flex><span>        p <span style=color:#ff7b72;font-weight:700>=</span> <span style=color:#d2a8ff;font-weight:700>strtok</span>(NULL, <span style=color:#a5d6ff>&#34;|&#34;</span>);
+</span></span><span style=display:flex><span>    }
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>    <span style=color:#ff7b72>int</span> pipefd[<span style=color:#a5d6ff>2</span>];
+</span></span><span style=display:flex><span>    <span style=color:#ff7b72>int</span> fd_in <span style=color:#ff7b72;font-weight:700>=</span> <span style=color:#a5d6ff>0</span>;
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>    <span style=color:#ff7b72>for</span>(<span style=color:#ff7b72>int</span> i <span style=color:#ff7b72;font-weight:700>=</span> <span style=color:#a5d6ff>0</span>; i <span style=color:#ff7b72;font-weight:700>&lt;</span> arg_count; i<span style=color:#ff7b72;font-weight:700>++</span>){
+</span></span><span style=display:flex><span>        <span style=color:#d2a8ff;font-weight:700>pipe</span>(pipefd);
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>        <span style=color:#ff7b72>if</span>(<span style=color:#d2a8ff;font-weight:700>fork</span>() <span style=color:#ff7b72;font-weight:700>==</span> <span style=color:#a5d6ff>0</span>){ <span style=color:#8b949e;font-style:italic>// child
+</span></span></span><span style=display:flex><span>            <span style=color:#d2a8ff;font-weight:700>dup2</span>(fd_in, STDIN_FILENO);
+</span></span><span style=display:flex><span>            <span style=color:#ff7b72>if</span>(i <span style=color:#ff7b72;font-weight:700>&lt;</span> arg_count <span style=color:#ff7b72;font-weight:700>-</span> <span style=color:#a5d6ff>1</span>){
+</span></span><span style=display:flex><span>                <span style=color:#d2a8ff;font-weight:700>dup2</span>(pipefd[<span style=color:#a5d6ff>1</span>], STDOUT_FILENO);
+</span></span><span style=display:flex><span>            }
+</span></span><span style=display:flex><span>            <span style=color:#d2a8ff;font-weight:700>close</span>(pipefd[<span style=color:#a5d6ff>0</span>]);
+</span></span><span style=display:flex><span>            <span style=color:#d2a8ff;font-weight:700>myexec</span>(args[i]);
+</span></span><span style=display:flex><span>            <span style=color:#d2a8ff;font-weight:700>exit</span>(<span style=color:#a5d6ff>0</span>);
+</span></span><span style=display:flex><span>        }
+</span></span><span style=display:flex><span>        <span style=color:#d2a8ff;font-weight:700>close</span>(pipefd[<span style=color:#a5d6ff>1</span>]);
+</span></span><span style=display:flex><span>        fd_in <span style=color:#ff7b72;font-weight:700>=</span> pipefd[<span style=color:#a5d6ff>0</span>];
+</span></span><span style=display:flex><span>    }
+</span></span><span style=display:flex><span>    <span style=color:#ff7b72>for</span> (<span style=color:#ff7b72>int</span> i <span style=color:#ff7b72;font-weight:700>=</span> <span style=color:#a5d6ff>0</span>; i <span style=color:#ff7b72;font-weight:700>&lt;</span> arg_count; i<span style=color:#ff7b72;font-weight:700>++</span>){
+</span></span><span style=display:flex><span>        <span style=color:#d2a8ff;font-weight:700>wait</span>(NULL);
+</span></span><span style=display:flex><span>    }
+</span></span><span style=display:flex><span>}
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#ff7b72>int</span> <span style=color:#d2a8ff;font-weight:700>main</span>(){
+</span></span><span style=display:flex><span>    <span style=color:#ff7b72>char</span> buf[<span style=color:#a5d6ff>1024</span>];
+</span></span><span style=display:flex><span>    <span style=color:#d2a8ff;font-weight:700>printf</span>(<span style=color:#a5d6ff>&#34;---- my shell ----</span><span style=color:#79c0ff>\n</span><span style=color:#a5d6ff>&#34;</span>);
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>    <span style=color:#ff7b72>while</span>(<span style=color:#a5d6ff>1</span>){
+</span></span><span style=display:flex><span>        <span style=color:#d2a8ff;font-weight:700>printf</span>(<span style=color:#a5d6ff>&#34;myshell&gt; &#34;</span>);
+</span></span><span style=display:flex><span>        <span style=color:#d2a8ff;font-weight:700>fflush</span>(stdout);
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>        <span style=color:#ff7b72>if</span>(<span style=color:#d2a8ff;font-weight:700>fgets</span>(buf, <span style=color:#ff7b72>sizeof</span>(buf), stdin) <span style=color:#ff7b72;font-weight:700>==</span> NULL){
+</span></span><span style=display:flex><span>            <span style=color:#ff7b72>break</span>;
+</span></span><span style=display:flex><span>        }
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>        <span style=color:#ff7b72>if</span>(<span style=color:#d2a8ff;font-weight:700>strncmp</span>(buf, <span style=color:#a5d6ff>&#34;exit&#34;</span>, <span style=color:#a5d6ff>4</span>) <span style=color:#ff7b72;font-weight:700>==</span> <span style=color:#a5d6ff>0</span> <span style=color:#ff7b72;font-weight:700>&amp;&amp;</span> buf[<span style=color:#a5d6ff>4</span>] <span style=color:#ff7b72;font-weight:700>==</span> <span style=color:#a5d6ff>&#39;\n&#39;</span>){
+</span></span><span style=display:flex><span>            <span style=color:#ff7b72>break</span>;
+</span></span><span style=display:flex><span>        }
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>        <span style=color:#ff7b72>if</span>(<span style=color:#d2a8ff;font-weight:700>strchr</span>(buf, <span style=color:#a5d6ff>&#39;|&#39;</span>) <span style=color:#ff7b72;font-weight:700>!=</span> NULL){
+</span></span><span style=display:flex><span>            <span style=color:#d2a8ff;font-weight:700>mypipe</span>(buf);
+</span></span><span style=display:flex><span>        }
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>        <span style=color:#d2a8ff;font-weight:700>myexec</span>(buf);
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>    }
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span>    <span style=color:#d2a8ff;font-weight:700>printf</span>(<span style=color:#a5d6ff>&#34;Good Bye</span><span style=color:#79c0ff>\n</span><span style=color:#a5d6ff>&#34;</span>);
+</span></span><span style=display:flex><span>    <span style=color:#d2a8ff;font-weight:700>exit</span>(<span style=color:#a5d6ff>0</span>);
+</span></span><span style=display:flex><span>}
 </span></span></code></pre></div><p>よさそう．
 パイプラインもリダイレクトも一つにしか対応できていないがまあモックとしよう．．．
-ちゃんとしたシェルはまた Rust で書こう</p>
-<p>おしまい</p>
-
-    </div>
-    <div class="post-footer">
-      
-      
-    </div>
-  </article>
-
-    </main>
-    <footer class="site-footer">
-      <div class="site-footer-inner">
-        <p class="site-footer-memo">最近は颯も好き ／ 内容の正確性は保証していません🐶</p>
-        <div class="site-footer-row">
-          <span>© side-realms All rights reserved.</span>
-          <span class="site-footer-social">
-            
-            <a href="https://github.com" target="_blank" rel="noreferrer noopener me">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-github">
-  <title>Github</title>
-  <path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"></path>
-</svg>
-            </a>
-            
-          </span>
-        </div>
-      </div>
-    </footer>
-  </body>
-</html>
+ちゃんとしたシェルはまた Rust で書こう</p><p>おしまい</p></div><a class=backlink href=/blogs/>← blogs</a></main></div></body></html>

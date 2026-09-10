@@ -30,9 +30,10 @@ draft: false
 
 ## Publication (査読あり)
 
-1. K. Doi and T. Sugawara, “Laser-based Covert Channel Attack Using Inaudible Acoustic Leakage from Multilayer Ceramic Capacitors,” IEICE Trans. Fundamentals
-2. K. Doi, K. Ooi, and T. Sugawara, “Acoustic Eavesdropping Attack Using Self-Mixing Laser Interferometer,” ASHES 2024.
-3. K. Doi and T. Sugawara, “Poster: Inaudible Acoustic Noise from Silicon Capacitors for Voice-Command Injection,” ACM CCS 2022 Poster session, 2022.
+1. K. Doi and T. Sugawara, “Low-Cost Laser Microphone Using Self-Mixing Interferometry and Its Characteristics,” IEICE Trans. Fundamentals 2026
+2. K. Doi and T. Sugawara, “Laser-based Covert Channel Attack Using Inaudible Acoustic Leakage from Multilayer Ceramic Capacitors,” IEICE Trans. Fundamentals 2024
+3. K. Doi, K. Ooi, and T. Sugawara, “Acoustic Eavesdropping Attack Using Self-Mixing Laser Interferometer,” ASHES 2024.
+4. K. Doi and T. Sugawara, “Poster: Inaudible Acoustic Noise from Silicon Capacitors for Voice-Command Injection,” ACM CCS 2022 Poster session, 2022.
 
 ## Publication (査読なし・その他)
 
@@ -55,20 +56,23 @@ draft: false
 
 - 2022/03: 電気通信大学卒業
   - 目黒会賞
+- 2023/03: 学生表彰
 - 2024/03: 電気通信大学大学院 博士前期課程修了
 - 2026/04~: 電気通信大学大学院 博士後期課程 在学中
 
 ## その他
 
-- HackaFesta: 2 位 (チーム)
+- HackaFesta 2023: 2 位 (チーム)
   - Car hacking
-- katagaitai CTF: 4 位 (ソロ)
-- Hack The Box CTF: 350/17000 (チーム)
+- katagaitai CTF 2023: 4 位 (ソロ)
+- Hack The Box CTF 2025: 350/17000 (チーム)
 - AI CTF 2025 (ソロ)
   - 国内: 1 位
   - 世界: 23 位
 - IERAE CTF 2025 16/538 (チーム)
 - SECCON Beginners 2025 23/880 (チーム)
+- Aerospace CTF 2026 10/350
+- PQC CTF 2026 6/250
 
 ## 好きなもの
 
@@ -84,16 +88,10 @@ draft: false
 - 絵
   - クノップフ
   - ベーコン
-  - 鈴木其一
-- 酒
-  - 幻（広島）
-  - 西の星（大分）
-  - 九平次（愛知）
+  - 鴨居玲
 - 音楽
   - SCIS-9
   - YMO
-  - 細野晴臣
-  - Emerson, Lake & Palmer
 - Vtuber
   - ぽんぽことピーナッツくん
   - おむらいす食堂
