@@ -1,0 +1,44 @@
+{{- $bleed := eq .Section "gallery" -}}
+{{- /* いまナビのどれを見ているか（記事は blogs 扱い） */ -}}
+{{- $cur := "" -}}
+{{- if in (slice "blogs" "tech" "other") .Section -}}{{ $cur = "blogs" }}
+{{- else if in (slice "log" "gallery" "links") .Section -}}{{ $cur = .Section }}
+{{- else if eq .RelPermalink (relURL "/portfolio/") -}}{{ $cur = "portfolio" }}
+{{- end -}}
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{{ if .IsHome }}{{ site.Title }}{{ else }}{{ .Title }} - {{ site.Title }}{{ end }}</title>
+    <meta name="description" content="{{ with .Description }}{{ . }}{{ else }}{{ site.Params.description }}{{ end }}" />
+    <link rel="icon" href="{{ "favicon.svg" | relURL }}" type="image/svg+xml" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500&family=WDXL+Lubrifont+JP+N&display=swap"
+      rel="stylesheet"
+    />
+    {{- $css := resources.Get "css/main.css" | minify | fingerprint }}
+    <link rel="stylesheet" href="{{ $css.RelPermalink }}" integrity="{{ $css.Data.Integrity }}" />
+    {{ partial "katex.html" . }}
+  </head>
+  <body{{ with (or (and .IsHome "home") (and $bleed "bleed")) }} class="{{ . }}"{{ end }}>
+    {{- if .IsHome }}
+      {{ block "main" . }}{{ end }}
+    {{- else }}
+      <div class="{{ if $bleed }}bleed-wrap{{ else }}sheet{{ end }}">
+        <header class="site-header">
+          <a class="site-title" href="{{ "/" | relURL }}">{{ site.Title }}</a>
+          <nav class="site-nav">
+            {{- range site.Menus.main }}
+              <a href="{{ .URL | relURL }}"{{ if eq $cur .Identifier }} class="current"{{ end }}>{{ .Name }}</a>
+            {{- end }}
+          </nav>
+        </header>
+
+        {{ block "main" . }}{{ end }}
+      </div>
+    {{- end }}
+  </body>
+</html>

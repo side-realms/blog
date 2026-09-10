@@ -1,0 +1,11 @@
+{{- $items := partial "toc-flat.html" .Fragments.Headings -}}
+{{- if gt (len $items) 1 -}}
+<nav class="toc">
+  <p class="toc-label">contents</p>
+  <ul>
+    {{- range $items }}
+    <li class="d{{ .Level }}"><a href="#{{ .ID }}">{{ .Title }}</a></li>
+    {{- end }}
+  </ul>
+</nav>
+{{- end -}}

@@ -3,7 +3,7 @@ name: GitHub Pages
 on:
   push:
     branches:
-      - main  # Set a branch name to trigger deployment
+      - main
   pull_request:
 
 jobs:
@@ -12,19 +12,18 @@ jobs:
     concurrency:
       group: ${{ github.workflow }}-${{ github.ref }}
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
-          submodules: true  # Fetch Hugo themes (true OR recursive)
-          fetch-depth: 0    # Fetch all history for .GitInfo and .Lastmod
+          fetch-depth: 0    # .GitInfo / .Lastmod のため
 
       - name: Setup Hugo
-        uses: peaceiris/actions-hugo@v2
+        uses: peaceiris/actions-hugo@v3
         with:
-          hugo-version: '0.85.0'
+          hugo-version: '0.154.5'
           extended: true
 
       - name: Build
-        run: hugo --minify
+        run: hugo --minify --gc
 
       - name: Deploy
         uses: peaceiris/actions-gh-pages@v3

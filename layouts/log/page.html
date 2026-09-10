@@ -1,0 +1,13 @@
+{{ define "main" }}
+  <main class="content">
+    {{ partial "toc.html" . }}
+
+    <h1 class="page-title">{{ .Title }}</h1>
+
+    <div class="prose">
+      {{ .Content }}
+    </div>
+
+    <a class="backlink" href="{{ "/log/" | relURL }}">← life log</a>
+  </main>
+{{ end }}

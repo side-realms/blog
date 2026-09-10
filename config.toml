@@ -1,67 +1,55 @@
 baseURL = 'https://side-realms.dev/'
-relativeurls = true
-publishDir = "docs"
 languageCode = 'ja-jp'
-theme = "m10c"
-title = "お茶は綾鷹派"
+title = '検品'
 buildDrafts = false
 buildFuture = false
 buildExpired = false
 cleanDestinationDir = true
 disableHugoGeneratorInject = true
 
+[params]
+  author = 'KoheiDoi'
+  description = '検品'
+  # links ページに並べる外部リンク
+  [[params.links]]
+    name = 'CTF writeup'
+    url = 'https://polar-tray-8ed.notion.site/writeup-14b43a1310e9803fb0fff4e7abba1262'
+  [[params.links]]
+    name = 'FIA'
+    url = 'https://fia.side-realms.dev/'
+
 [menu]
   [[menu.main]]
-    identifier = "home"
-    name = "Home"
-    url = "/"
+    identifier = 'portfolio'
+    name = 'about'
+    url = '/portfolio/'
     weight = 1
   [[menu.main]]
-    identifier = "log"
-    name = "life log"
-    url = "/log"
+    identifier = 'blogs'
+    name = 'blogs'
+    url = '/blogs/'
     weight = 2
   [[menu.main]]
-    identifier = "tech"
-    name = "tech"
-    url = "/tech/"
+    identifier = 'gallery'
+    name = 'gallery'
+    url = '/gallery/'
     weight = 3
   [[menu.main]]
-    identifier = "other"
-    name = "other"
-    url = "/other/"
+    identifier = 'links'
+    name = 'links'
+    url = '/links/'
     weight = 4
   [[menu.main]]
-    identifier = "Portfolio"
-    name = "Portfolio"
-    url = "/portfolio/"
+    identifier = 'log'
+    name = 'life log'
+    url = '/log/'
     weight = 5
 
-[params]
-  author = "KoheiDoi"
-  description = "最近は颯も好き"
-  memo = "内容の正確性は保証していません🐶"
-  #menu_item_separator = " 🍙 "
-  menu_item_separator = ""
-  avatar = "images/avatar.jpg"
-  [[params.social]]
-    icon = "github"
-    name = "Github"
-    url = "https://github.com"
-#  [[params.social]]
-#    icon = "twitter"
-#    name = "Twitter"
-#    url = "https://twitter.com"
-
-[params.style]
-darkestColor = "#121110"  # header background
-darkColor = "#0d0c0b"     # page background
-lightColor = "#d4cfc7"    # body text
-lightestColor = "#f4f0e8" # title text
-primaryColor = "#ff5c38"  # accent
-
-[pagination]
-pagerSize = 20
-
-[markup.goldmark.renderer]
-unsafe = true
+[markup]
+  [markup.goldmark.renderer]
+    unsafe = true
+  [markup.highlight]
+    style = 'github-dark'
+    noClasses = true
+    lineNos = false
+    tabWidth = 4

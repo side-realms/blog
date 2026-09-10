@@ -1,0 +1,76 @@
+{{ define "main" }}
+  {{- /* gallery / music — 額装した波形を並べる部屋 */}}
+  <main class="room">
+    {{- range sort (resources.Match "music/*.mp3") "Name" "desc" }}
+      {{- $base := path.BaseName .Name }}
+      {{- $date := replaceRE `^(\d{4})[_-]?(\d{2})[_-]?(\d{2}).*$` "$1.$2.$3" $base }}
+      {{- $peaks := index site.Data.waveforms $base }}
+      {{- if not $peaks }}
+        {{- $peaks = slice }}
+        {{- range seq 150 }}{{ $peaks = $peaks | append 0.4 }}{{ end }}
+      {{- end }}
+      <section class="piece">
+        <div class="frame sound" data-src="{{ .RelPermalink }}">
+          {{ partial "waveform.html" (dict "peaks" $peaks "class" "wv wv-base") }}
+          {{ partial "waveform.html" (dict "peaks" $peaks "class" "wv wv-on") }}
+          <button class="play" aria-label="play">▶</button>
+        </div>
+        <p class="p-title">{{ $date }}</p>
+      </section>
+    {{- end }}
+  </main>
+
+  <script>
+    (function () {
+      const audio = new Audio();
+      let current = null;
+
+      const frames = [...document.querySelectorAll('.frame.sound')];
+
+      frames.forEach((frame) => {
+        const btn = frame.querySelector('.play');
+        const on = frame.querySelector('.wv-on');
+
+        btn.addEventListener('click', (e) => {
+          e.stopPropagation();
+          if (current === frame) {
+            if (audio.paused) { audio.play(); btn.textContent = '❚❚'; }
+            else { audio.pause(); btn.textContent = '▶'; }
+            return;
+          }
+          if (current) {
+            current.querySelector('.wv-on').style.clipPath = 'inset(0 100% 0 0)';
+            current.querySelector('.play').textContent = '▶';
+          }
+          current = frame;
+          audio.src = frame.dataset.src;
+          audio.play();
+          btn.textContent = '❚❚';
+        });
+
+        frame.addEventListener('click', (e) => {
+          if (current !== frame) { btn.click(); return; }
+          const r = frame.getBoundingClientRect();
+          if (isFinite(audio.duration)) {
+            audio.currentTime = (audio.duration * (e.clientX - r.left)) / r.width;
+          }
+        });
+
+        audio.addEventListener('timeupdate', () => {
+          if (current !== frame || !isFinite(audio.duration)) return;
+          on.style.clipPath = `inset(0 ${100 - (audio.currentTime / audio.duration) * 100}% 0 0)`;
+        });
+      });
+
+      // 終わったら次の額へ
+      audio.addEventListener('ended', () => {
+        const i = frames.indexOf(current);
+        current.querySelector('.wv-on').style.clipPath = 'inset(0 100% 0 0)';
+        current.querySelector('.play').textContent = '▶';
+        const next = frames[i + 1];
+        current = null;
+        if (next) next.querySelector('.play').click();
+      });
+    })();
+  </script>
+{{ end }}

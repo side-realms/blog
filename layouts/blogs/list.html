@@ -1,0 +1,15 @@
+{{ define "main" }}
+  {{- $posts := where site.RegularPages "Section" "in" (slice "tech" "other") }}
+  <main class="content">
+    <h1 class="page-title">{{ .Title }}</h1>
+
+    <ul class="entries">
+      {{- range $posts.ByDate.Reverse }}
+      <li>
+        <span class="date">{{ .Date.Format "2006-01-02" }}</span>
+        <a href="{{ .RelPermalink }}">{{ .Title }}</a>
+      </li>
+      {{- end }}
+    </ul>
+  </main>
+{{ end }}

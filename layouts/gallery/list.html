@@ -1,0 +1,7 @@
+{{ define "main" }}
+  {{- /* gallery 入口：illust と music の2つの展示室に分岐する */}}
+  <main class="hall">
+    <a class="door" href="{{ "/gallery/illust/" | relURL }}">illust</a>
+    <a class="door" href="{{ "/gallery/music/" | relURL }}">music</a>
+  </main>
+{{ end }}

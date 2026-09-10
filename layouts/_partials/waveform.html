@@ -1,0 +1,9 @@
+{{- /* peaks（0-1の配列）を 150x48 の棒グラフSVGにする */ -}}
+{{- $peaks := .peaks -}}
+<svg class="{{ .class }}" viewBox="0 0 150 48" preserveAspectRatio="none" aria-hidden="true">
+  {{- range $i, $p := $peaks -}}
+    {{- $h := math.Max 1.2 (mul $p 46.0) -}}
+    {{- $y := div (sub 48.0 $h) 2.0 -}}
+    <rect x="{{ printf "%.2f" (add (float $i) 0.15) }}" y="{{ printf "%.2f" $y }}" width="0.7" height="{{ printf "%.2f" $h }}" />
+  {{- end -}}
+</svg>

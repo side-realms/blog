@@ -1,0 +1,11 @@
+{{ define "main" }}
+  <div class="home-main"></div>
+  <div class="home-box">
+    <p class="home-title">{{ site.Title }}</p>
+    <nav class="home-nav">
+      {{- range site.Menus.main }}
+        <a href="{{ .URL | relURL }}">{{ .Name }}</a>
+      {{- end }}
+    </nav>
+  </div>
+{{ end }}

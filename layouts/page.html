@@ -1,0 +1,15 @@
+{{ define "main" }}
+  {{- $isPost := in (slice "tech" "other") .Section }}
+  <main class="content">
+    {{ if $isPost }}{{ partial "toc.html" . }}{{ end }}
+
+    {{ if $isPost }}<p class="post-date">{{ .Date.Format "2006-01-02" }}</p>{{ end }}
+    <h1 class="page-title">{{ .Title }}</h1>
+
+    <div class="prose">
+      {{ .Content }}
+    </div>
+
+    {{ if $isPost }}<a class="backlink" href="{{ "/blogs/" | relURL }}">← blogs</a>{{ end }}
+  </main>
+{{ end }}

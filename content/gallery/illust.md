@@ -1,0 +1,4 @@
+---
+title: "illust"
+layout: "illust"
+---

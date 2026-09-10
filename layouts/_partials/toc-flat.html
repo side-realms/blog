@@ -1,0 +1,13 @@
+{{- /* 見出しツリーを深さ2までの一次元スライスに均す */ -}}
+{{- $out := slice -}}
+{{- range . -}}
+  {{- if and (ge .Level 1) (le .Level 2) -}}
+    {{- $out = $out | append . -}}
+  {{- end -}}
+  {{- with .Headings -}}
+    {{- range partial "toc-flat.html" . -}}
+      {{- $out = $out | append . -}}
+    {{- end -}}
+  {{- end -}}
+{{- end -}}
+{{- return $out -}}

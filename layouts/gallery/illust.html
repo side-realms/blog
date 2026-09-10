@@ -1,0 +1,32 @@
+{{ define "main" }}
+  {{- /* gallery / illust — ホワイトキューブ：1画面1作品 */}}
+  {{- $titles := site.Data.gallery.titles }}
+  <main class="illust">
+    {{- range sort (resources.Match "gallery/*.{png,jpg,jpeg,webp}") "Name" "desc" }}
+      {{- $base := path.BaseName .Name }}
+      {{- $date := replaceRE `^(\d{4})[_-]?(\d{2})[_-]?(\d{2}).*$` "$1.$2.$3" $base }}
+      {{- $title := index $titles $base }}
+      {{- $w800 := . }}
+      {{- if gt .Width 800 }}{{ $w800 = .Resize "800x webp q82" }}{{ end }}
+      {{- $w1400 := . }}
+      {{- if gt .Width 1400 }}{{ $w1400 = .Resize "1400x webp q82" }}{{ end }}
+      <section class="piece">
+        <a href="{{ .RelPermalink }}" target="_blank" rel="noopener">
+          <img
+            class="work"
+            src="{{ $w800.RelPermalink }}"
+            srcset="{{ $w800.RelPermalink }} {{ $w800.Width }}w, {{ $w1400.RelPermalink }} {{ $w1400.Width }}w"
+            sizes="90vw"
+            width="{{ $w1400.Width }}"
+            height="{{ $w1400.Height }}"
+            loading="lazy"
+            decoding="async"
+            alt="{{ $title | default $date }}"
+          />
+        </a>
+        <p class="p-title">{{ $title | default $date }}</p>
+        {{- with $title }}<p class="p-date">{{ $date }}</p>{{ end }}
+      </section>
+    {{- end }}
+  </main>
+{{ end }}
