@@ -1,8 +1,7 @@
-<!doctype html><html lang=ja><head><meta charset=UTF-8><meta name=viewport content="width=device-width,initial-scale=1"><title>Implement ls command in C - 検品</title><meta name=description content="検品"><link rel=icon href=/favicon.svg type=image/svg+xml><link rel=preconnect href=https://fonts.googleapis.com><link rel=preconnect href=https://fonts.gstatic.com crossorigin><link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500&family=WDXL+Lubrifont+JP+N&display=swap" rel=stylesheet><link rel=stylesheet href=/css/main.min.bcc8f3dc1119bc466ef88a13eb847ca9e49569abe90eb19d7f8dba6234b6fb2b.css integrity="sha256-vMjz3BEZvEZu+IoT64R8qeSVaavpDrGdf426YjS2+ys="></head><body><div class=sheet><header class=site-header><a class=site-title href=/>検品</a><nav class=site-nav><a href=/portfolio/>about</a>
+<!doctype html><html lang=ja><head><meta charset=UTF-8><meta name=viewport content="width=device-width,initial-scale=1"><title>Implement ls command in C - 検品</title><meta name=description content="検品"><link rel=icon href=/favicon.svg type=image/svg+xml><link rel=preconnect href=https://fonts.googleapis.com><link rel=preconnect href=https://fonts.gstatic.com crossorigin><link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500&family=WDXL+Lubrifont+JP+N&display=swap" rel=stylesheet><link rel=stylesheet href=/css/main.min.cc3b7ba323a5868b9d40bff43107a31597a10b359591523b92c06fea2a8d99f3.css integrity="sha256-zDt7oyOlhoudQL/0MQejFZehCzWVkVI7ksBv6iqNmfM="></head><body><div class=sheet><header class=site-header><a class=site-title href=/>検品</a><nav class=site-nav><a href=/portfolio/>about</a>
 <a href=/blogs/ class=current>blogs</a>
-<a href=/gallery/>gallery</a>
 <a href=/links/>links</a>
-<a href=/log/>life log</a></nav></header><main class=content><p class=post-date>2023-09-24</p><h1 class=page-title>Implement ls command in C</h1><div class=prose><h2 id=基本的な実装>基本的な実装</h2><div class=highlight><pre tabindex=0 style=color:#e6edf3;background-color:#0d1117;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-C data-lang=C><span style=display:flex><span><span style=color:#8b949e;font-weight:700;font-style:italic>#include</span> <span style=color:#8b949e;font-weight:700;font-style:italic>&lt;stdio.h&gt;</span><span style=color:#8b949e;font-weight:700;font-style:italic>
+<a href=/log/>life log</a></nav></header><main class=content><p class=post-date>2023-09-24</p><h1 class=page-title>Implement ls command in C</h1><div class=prose><h2 id=基本的な実装>基本的な実装</h2><div class=highlight><pre tabindex=0 style=color:#e6edf3;background-color:#0d1117;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none><code class=language-C data-lang=C><span style=display:flex><span><span style=color:#8b949e;font-weight:700;font-style:italic>#include</span> <span style=color:#8b949e;font-weight:700;font-style:italic>&lt;stdio.h&gt;</span><span style=color:#8b949e;font-weight:700;font-style:italic>
 </span></span></span><span style=display:flex><span><span style=color:#8b949e;font-weight:700;font-style:italic>#include</span> <span style=color:#8b949e;font-weight:700;font-style:italic>&lt;stdlib.h&gt;</span><span style=color:#8b949e;font-weight:700;font-style:italic>
 </span></span></span><span style=display:flex><span><span style=color:#8b949e;font-weight:700;font-style:italic>#include</span> <span style=color:#8b949e;font-weight:700;font-style:italic>&lt;dirent.h&gt;</span><span style=color:#8b949e;font-weight:700;font-style:italic>
 </span></span></span><span style=display:flex><span>
@@ -35,7 +34,7 @@
 </span></span><span style=display:flex><span>    }
 </span></span><span style=display:flex><span>
 </span></span><span style=display:flex><span>}
-</span></span></code></pre></div><div class=highlight><pre tabindex=0 style=color:#e6edf3;background-color:#0d1117;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-sh data-lang=sh><span style=display:flex><span>$ ./myls .
+</span></span></code></pre></div><div class=highlight><pre tabindex=0 style=color:#e6edf3;background-color:#0d1117;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none><code class=language-sh data-lang=sh><span style=display:flex><span>$ ./myls .
 </span></span><span style=display:flex><span>.
 </span></span><span style=display:flex><span>mytail
 </span></span><span style=display:flex><span>test.txt
@@ -45,7 +44,7 @@
 </span></span><span style=display:flex><span>myhead
 </span></span><span style=display:flex><span>tail.c
 </span></span><span style=display:flex><span>head.c
-</span></span></code></pre></div><p>よさそう．</p><p>再帰探索を追加する．</p><div class=highlight><pre tabindex=0 style=color:#e6edf3;background-color:#0d1117;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-C data-lang=C><span style=display:flex><span><span style=color:#8b949e;font-weight:700;font-style:italic>#include</span> <span style=color:#8b949e;font-weight:700;font-style:italic>&lt;stdio.h&gt;</span><span style=color:#8b949e;font-weight:700;font-style:italic>
+</span></span></code></pre></div><p>よさそう．</p><p>再帰探索を追加する．</p><div class=highlight><pre tabindex=0 style=color:#e6edf3;background-color:#0d1117;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none><code class=language-C data-lang=C><span style=display:flex><span><span style=color:#8b949e;font-weight:700;font-style:italic>#include</span> <span style=color:#8b949e;font-weight:700;font-style:italic>&lt;stdio.h&gt;</span><span style=color:#8b949e;font-weight:700;font-style:italic>
 </span></span></span><span style=display:flex><span><span style=color:#8b949e;font-weight:700;font-style:italic>#include</span> <span style=color:#8b949e;font-weight:700;font-style:italic>&lt;stdlib.h&gt;</span><span style=color:#8b949e;font-weight:700;font-style:italic>
 </span></span></span><span style=display:flex><span><span style=color:#8b949e;font-weight:700;font-style:italic>#include</span> <span style=color:#8b949e;font-weight:700;font-style:italic>&lt;dirent.h&gt;</span><span style=color:#8b949e;font-weight:700;font-style:italic>
 </span></span></span><span style=display:flex><span><span style=color:#8b949e;font-weight:700;font-style:italic>#include</span> <span style=color:#8b949e;font-weight:700;font-style:italic>&lt;sys/stat.h&gt;</span><span style=color:#8b949e;font-weight:700;font-style:italic>
@@ -101,7 +100,7 @@
 </span></span><span style=display:flex><span>    }
 </span></span><span style=display:flex><span>
 </span></span><span style=display:flex><span>}
-</span></span></code></pre></div><p>dir 構造体の使い方をミスって 1 h 溶かした</p><div class=highlight><pre tabindex=0 style=color:#e6edf3;background-color:#0d1117;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-sh data-lang=sh><span style=display:flex><span>$ ./linux_tutorial/head/myls ./linux_tutorial/
+</span></span></code></pre></div><p>dir 構造体の使い方をミスって 1 h 溶かした</p><div class=highlight><pre tabindex=0 style=color:#e6edf3;background-color:#0d1117;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none><code class=language-sh data-lang=sh><span style=display:flex><span>$ ./linux_tutorial/head/myls ./linux_tutorial/
 </span></span><span style=display:flex><span>.
 </span></span><span style=display:flex><span>..
 </span></span><span style=display:flex><span>head/

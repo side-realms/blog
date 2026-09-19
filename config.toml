@@ -30,11 +30,12 @@ disableHugoGeneratorInject = true
     name = 'blogs'
     url = '/blogs/'
     weight = 2
-  [[menu.main]]
-    identifier = 'gallery'
-    name = 'gallery'
-    url = '/gallery/'
-    weight = 3
+  # gallery は非公開中のためメニューから外している（復活させるには下の5行のコメントを外す）
+#   [[menu.main]]
+#     identifier = 'gallery'
+#     name = 'gallery'
+#     url = '/gallery/'
+#     weight = 3
   [[menu.main]]
     identifier = 'links'
     name = 'links'

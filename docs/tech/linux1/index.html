@@ -1,9 +1,8 @@
-<!doctype html><html lang=ja><head><meta charset=UTF-8><meta name=viewport content="width=device-width,initial-scale=1"><title>Implement cat command in C - 検品</title><meta name=description content="検品"><link rel=icon href=/favicon.svg type=image/svg+xml><link rel=preconnect href=https://fonts.googleapis.com><link rel=preconnect href=https://fonts.gstatic.com crossorigin><link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500&family=WDXL+Lubrifont+JP+N&display=swap" rel=stylesheet><link rel=stylesheet href=/css/main.min.bcc8f3dc1119bc466ef88a13eb847ca9e49569abe90eb19d7f8dba6234b6fb2b.css integrity="sha256-vMjz3BEZvEZu+IoT64R8qeSVaavpDrGdf426YjS2+ys="></head><body><div class=sheet><header class=site-header><a class=site-title href=/>検品</a><nav class=site-nav><a href=/portfolio/>about</a>
+<!doctype html><html lang=ja><head><meta charset=UTF-8><meta name=viewport content="width=device-width,initial-scale=1"><title>Implement cat command in C - 検品</title><meta name=description content="検品"><link rel=icon href=/favicon.svg type=image/svg+xml><link rel=preconnect href=https://fonts.googleapis.com><link rel=preconnect href=https://fonts.gstatic.com crossorigin><link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500&family=WDXL+Lubrifont+JP+N&display=swap" rel=stylesheet><link rel=stylesheet href=/css/main.min.cc3b7ba323a5868b9d40bff43107a31597a10b359591523b92c06fea2a8d99f3.css integrity="sha256-zDt7oyOlhoudQL/0MQejFZehCzWVkVI7ksBv6iqNmfM="></head><body><div class=sheet><header class=site-header><a class=site-title href=/>検品</a><nav class=site-nav><a href=/portfolio/>about</a>
 <a href=/blogs/ class=current>blogs</a>
-<a href=/gallery/>gallery</a>
 <a href=/links/>links</a>
 <a href=/log/>life log</a></nav></header><main class=content><nav class=toc><p class=toc-label>contents</p><ul><li class=d2><a href=#%e5%9f%ba%e6%9c%ac%e7%9a%84%e3%81%aa%e5%ae%9f%e8%a3%85>基本的な実装</a></li><li class=d2><a href=#%e6%8b%a1%e5%bc%b5>拡張</a></li></ul></nav><p class=post-date>2023-09-20</p><h1 class=page-title>Implement cat command in C</h1><div class=prose><p>今回は，引数に渡したファイルを読み込んで逐次表示していく <code>mycat</code> を実装する．
-開発環境は VM 上の Lubuntu で，下記の通り．</p><div class=highlight><pre tabindex=0 style=color:#e6edf3;background-color:#0d1117;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-sh data-lang=sh><span style=display:flex><span>lubuntu@lubuntu-virtualbox:~$ uname -a
+開発環境は VM 上の Lubuntu で，下記の通り．</p><div class=highlight><pre tabindex=0 style=color:#e6edf3;background-color:#0d1117;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none><code class=language-sh data-lang=sh><span style=display:flex><span>lubuntu@lubuntu-virtualbox:~$ uname -a
 </span></span><span style=display:flex><span>Linux lubuntu-virtualbox 6.8.0-50-generic <span style=color:#8b949e;font-style:italic>#51~22.04.1-Ubuntu SMP PREEMPT_DYNAMIC Thu Nov 21 12:03:03 UTC 2 x86_64 x86_64 x86_64 GNU/Linux</span>
 </span></span><span style=display:flex><span>
 </span></span><span style=display:flex><span>lubuntu@lubuntu-virtualbox:~$ lsb_release -a
@@ -15,7 +14,7 @@
 </span></span><span style=display:flex><span>
 </span></span><span style=display:flex><span>lubuntu@lubuntu-virtualbox:~$ cat /proc/cpuinfo | grep <span style=color:#a5d6ff>&#34;model name&#34;</span>
 </span></span><span style=display:flex><span>model name      : AMD Ryzen <span style=color:#a5d6ff>5</span> 5600X 6-Core Processor
-</span></span></code></pre></div><h2 id=基本的な実装>基本的な実装</h2><p>愚直な実装なら何も難しくない</p><div class=highlight><pre tabindex=0 style=color:#e6edf3;background-color:#0d1117;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-C data-lang=C><span style=display:flex><span><span style=color:#8b949e;font-weight:700;font-style:italic>#include</span> <span style=color:#8b949e;font-weight:700;font-style:italic>&lt;stdio.h&gt;</span><span style=color:#8b949e;font-weight:700;font-style:italic>
+</span></span></code></pre></div><h2 id=基本的な実装>基本的な実装</h2><p>愚直な実装なら何も難しくない</p><div class=highlight><pre tabindex=0 style=color:#e6edf3;background-color:#0d1117;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none><code class=language-C data-lang=C><span style=display:flex><span><span style=color:#8b949e;font-weight:700;font-style:italic>#include</span> <span style=color:#8b949e;font-weight:700;font-style:italic>&lt;stdio.h&gt;</span><span style=color:#8b949e;font-weight:700;font-style:italic>
 </span></span></span><span style=display:flex><span><span style=color:#8b949e;font-weight:700;font-style:italic>#include</span> <span style=color:#8b949e;font-weight:700;font-style:italic>&lt;sys/types.h&gt;</span><span style=color:#8b949e;font-weight:700;font-style:italic>
 </span></span></span><span style=display:flex><span><span style=color:#8b949e;font-weight:700;font-style:italic>#include</span> <span style=color:#8b949e;font-weight:700;font-style:italic>&lt;sys/stat.h&gt;</span><span style=color:#8b949e;font-weight:700;font-style:italic>
 </span></span></span><span style=display:flex><span><span style=color:#8b949e;font-weight:700;font-style:italic>#include</span> <span style=color:#8b949e;font-weight:700;font-style:italic>&lt;fcntl.h&gt;</span><span style=color:#8b949e;font-weight:700;font-style:italic>
@@ -70,7 +69,7 @@
 </span></span><span style=display:flex><span>    }
 </span></span><span style=display:flex><span>
 </span></span><span style=display:flex><span>}
-</span></span></code></pre></div><p>実行するとこう</p><div class=highlight><pre tabindex=0 style=color:#e6edf3;background-color:#0d1117;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-sh data-lang=sh><span style=display:flex><span>lubuntu@lubuntu-virtualbox:~/linux_tutorial$ gcc mycat.c -o mycat -Wall
+</span></span></code></pre></div><p>実行するとこう</p><div class=highlight><pre tabindex=0 style=color:#e6edf3;background-color:#0d1117;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none><code class=language-sh data-lang=sh><span style=display:flex><span>lubuntu@lubuntu-virtualbox:~/linux_tutorial$ gcc mycat.c -o mycat -Wall
 </span></span><span style=display:flex><span>lubuntu@lubuntu-virtualbox:~/linux_tutorial$ ./mycat
 </span></span><span style=display:flex><span>Usage: ./mycat &lt;filename&gt; 
 </span></span><span style=display:flex><span>lubuntu@lubuntu-virtualbox:~/linux_tutorial$ ./mycat tt.txt 
@@ -81,7 +80,7 @@
 </span></span><span style=display:flex><span>aaaaaaaa
 </span></span><span style=display:flex><span>bbbbbbbbbbbb
 </span></span><span style=display:flex><span>lubuntu@lubuntu-virtualbox:~/linux_tutorial$ 
-</span></span></code></pre></div><p>重要なのは下記</p><div class=highlight><pre tabindex=0 style=color:#e6edf3;background-color:#0d1117;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-C data-lang=C><span style=display:flex><span><span style=color:#ff7b72>while</span>((catted <span style=color:#ff7b72;font-weight:700>=</span> <span style=color:#d2a8ff;font-weight:700>read</span>(fp, buf, <span style=color:#ff7b72>sizeof</span> buf)) <span style=color:#ff7b72;font-weight:700>&gt;=</span> <span style=color:#a5d6ff>0</span>)
+</span></span></code></pre></div><p>重要なのは下記</p><div class=highlight><pre tabindex=0 style=color:#e6edf3;background-color:#0d1117;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none><code class=language-C data-lang=C><span style=display:flex><span><span style=color:#ff7b72>while</span>((catted <span style=color:#ff7b72;font-weight:700>=</span> <span style=color:#d2a8ff;font-weight:700>read</span>(fp, buf, <span style=color:#ff7b72>sizeof</span> buf)) <span style=color:#ff7b72;font-weight:700>&gt;=</span> <span style=color:#a5d6ff>0</span>)
 </span></span><span style=display:flex><span>    {
 </span></span><span style=display:flex><span>        <span style=color:#ff7b72>if</span>(catted <span style=color:#ff7b72;font-weight:700>==</span> <span style=color:#a5d6ff>0</span>)
 </span></span><span style=display:flex><span>        {
@@ -94,12 +93,12 @@
 </span></span><span style=display:flex><span>    }
 </span></span></code></pre></div><p><code>write</code> の第三引数に catted を与えないと，必要以上にメモリを read することになる．
 まあ <code>man</code> すれば分かることです．</p><h2 id=拡張>拡張</h2><h3 id=引数が無い場合標準入力を読み込む>引数が無い場合，標準入力を読み込む</h3><p>これも簡単．
-ファイルディスクリプタであり，ファイルポインタではない．</p><div class=highlight><pre tabindex=0 style=color:#e6edf3;background-color:#0d1117;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-C data-lang=C><span style=display:flex><span>    <span style=color:#ff7b72>if</span>(argc <span style=color:#ff7b72;font-weight:700>==</span> <span style=color:#a5d6ff>1</span>){
+ファイルディスクリプタであり，ファイルポインタではない．</p><div class=highlight><pre tabindex=0 style=color:#e6edf3;background-color:#0d1117;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none><code class=language-C data-lang=C><span style=display:flex><span>    <span style=color:#ff7b72>if</span>(argc <span style=color:#ff7b72;font-weight:700>==</span> <span style=color:#a5d6ff>1</span>){
 </span></span><span style=display:flex><span>        <span style=color:#d2a8ff;font-weight:700>mycat</span>(<span style=color:#a5d6ff>&#34;/dev/stdin&#34;</span>);
 </span></span><span style=display:flex><span>        <span style=color:#d2a8ff;font-weight:700>exit</span>(<span style=color:#a5d6ff>0</span>);
 </span></span><span style=display:flex><span>    }
 </span></span></code></pre></div><h3 id=オプション-nで行番号を記述する>オプション(-n)で行番号を記述する</h3><p>境界値の処理がちょいめんどうだが簡単．
-おそらくオプションの処理は間違っている (libc を見る限り get_opt を使うべき?)が，とりあえずこんな感じ</p><div class=highlight><pre tabindex=0 style=color:#e6edf3;background-color:#0d1117;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-C data-lang=C><span style=display:flex><span>
+おそらくオプションの処理は間違っている (libc を見る限り get_opt を使うべき?)が，とりあえずこんな感じ</p><div class=highlight><pre tabindex=0 style=color:#e6edf3;background-color:#0d1117;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none><code class=language-C data-lang=C><span style=display:flex><span>
 </span></span><span style=display:flex><span><span style=color:#ff7b72>int</span> <span style=color:#d2a8ff;font-weight:700>main</span>(<span style=color:#ff7b72>int</span> argc, <span style=color:#ff7b72>char</span> <span style=color:#ff7b72;font-weight:700>*</span>argv[])
 </span></span><span style=display:flex><span>{
 </span></span><span style=display:flex><span>
@@ -153,7 +152,7 @@
 </span></span><span style=display:flex><span>    <span style=color:#d2a8ff;font-weight:700>write</span>(STDOUT_FILENO, <span style=color:#ff7b72;font-weight:700>&amp;</span>enter, <span style=color:#a5d6ff>2</span>);
 </span></span><span style=display:flex><span>
 </span></span><span style=display:flex><span>}
-</span></span></code></pre></div><p>実行するとこう</p><div class=highlight><pre tabindex=0 style=color:#e6edf3;background-color:#0d1117;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-sh data-lang=sh><span style=display:flex><span>lubuntu@lubuntu-virtualbox:~/linux_tutorial$ gcc mycat.c -o mycat -Wall
+</span></span></code></pre></div><p>実行するとこう</p><div class=highlight><pre tabindex=0 style=color:#e6edf3;background-color:#0d1117;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none><code class=language-sh data-lang=sh><span style=display:flex><span>lubuntu@lubuntu-virtualbox:~/linux_tutorial$ gcc mycat.c -o mycat -Wall
 </span></span><span style=display:flex><span>lubuntu@lubuntu-virtualbox:~/linux_tutorial$ ./mycat -n ./t2.txt 
 </span></span><span style=display:flex><span>     <span style=color:#a5d6ff>1</span>  bbbbbbbbbbbb
 </span></span><span style=display:flex><span>     <span style=color:#a5d6ff>2</span>  ccc

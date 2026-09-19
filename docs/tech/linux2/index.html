@@ -1,9 +1,8 @@
-<!doctype html><html lang=ja><head><meta charset=UTF-8><meta name=viewport content="width=device-width,initial-scale=1"><title>Implement head & tail command in C - 検品</title><meta name=description content="検品"><link rel=icon href=/favicon.svg type=image/svg+xml><link rel=preconnect href=https://fonts.googleapis.com><link rel=preconnect href=https://fonts.gstatic.com crossorigin><link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500&family=WDXL+Lubrifont+JP+N&display=swap" rel=stylesheet><link rel=stylesheet href=/css/main.min.bcc8f3dc1119bc466ef88a13eb847ca9e49569abe90eb19d7f8dba6234b6fb2b.css integrity="sha256-vMjz3BEZvEZu+IoT64R8qeSVaavpDrGdf426YjS2+ys="></head><body><div class=sheet><header class=site-header><a class=site-title href=/>検品</a><nav class=site-nav><a href=/portfolio/>about</a>
+<!doctype html><html lang=ja><head><meta charset=UTF-8><meta name=viewport content="width=device-width,initial-scale=1"><title>Implement head & tail command in C - 検品</title><meta name=description content="検品"><link rel=icon href=/favicon.svg type=image/svg+xml><link rel=preconnect href=https://fonts.googleapis.com><link rel=preconnect href=https://fonts.gstatic.com crossorigin><link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500&family=WDXL+Lubrifont+JP+N&display=swap" rel=stylesheet><link rel=stylesheet href=/css/main.min.cc3b7ba323a5868b9d40bff43107a31597a10b359591523b92c06fea2a8d99f3.css integrity="sha256-zDt7oyOlhoudQL/0MQejFZehCzWVkVI7ksBv6iqNmfM="></head><body><div class=sheet><header class=site-header><a class=site-title href=/>検品</a><nav class=site-nav><a href=/portfolio/>about</a>
 <a href=/blogs/ class=current>blogs</a>
-<a href=/gallery/>gallery</a>
 <a href=/links/>links</a>
 <a href=/log/>life log</a></nav></header><main class=content><p class=post-date>2023-09-21</p><h1 class=page-title>Implement head & tail command in C</h1><div class=prose><p>今回は， <code>myhead</code> と <code>mytail</code> を実装する．
-開発環境は VM 上の Lubuntu で，下記の通り．</p><div class=highlight><pre tabindex=0 style=color:#e6edf3;background-color:#0d1117;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-sh data-lang=sh><span style=display:flex><span>lubuntu@lubuntu-virtualbox:~$ uname -a
+開発環境は VM 上の Lubuntu で，下記の通り．</p><div class=highlight><pre tabindex=0 style=color:#e6edf3;background-color:#0d1117;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none><code class=language-sh data-lang=sh><span style=display:flex><span>lubuntu@lubuntu-virtualbox:~$ uname -a
 </span></span><span style=display:flex><span>Linux lubuntu-virtualbox 6.8.0-50-generic <span style=color:#8b949e;font-style:italic>#51~22.04.1-Ubuntu SMP PREEMPT_DYNAMIC Thu Nov 21 12:03:03 UTC 2 x86_64 x86_64 x86_64 GNU/Linux</span>
 </span></span><span style=display:flex><span>
 </span></span><span style=display:flex><span>lubuntu@lubuntu-virtualbox:~$ lsb_release -a
@@ -15,7 +14,7 @@
 </span></span><span style=display:flex><span>
 </span></span><span style=display:flex><span>lubuntu@lubuntu-virtualbox:~$ cat /proc/cpuinfo | grep <span style=color:#a5d6ff>&#34;model name&#34;</span>
 </span></span><span style=display:flex><span>model name      : AMD Ryzen <span style=color:#a5d6ff>5</span> 5600X 6-Core Processor
-</span></span></code></pre></div><h2 id=基本的な実装>基本的な実装</h2><div class=highlight><pre tabindex=0 style=color:#e6edf3;background-color:#0d1117;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-C data-lang=C><span style=display:flex><span><span style=color:#8b949e;font-weight:700;font-style:italic>#include</span> <span style=color:#8b949e;font-weight:700;font-style:italic>&lt;stdio.h&gt;</span><span style=color:#8b949e;font-weight:700;font-style:italic>
+</span></span></code></pre></div><h2 id=基本的な実装>基本的な実装</h2><div class=highlight><pre tabindex=0 style=color:#e6edf3;background-color:#0d1117;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none><code class=language-C data-lang=C><span style=display:flex><span><span style=color:#8b949e;font-weight:700;font-style:italic>#include</span> <span style=color:#8b949e;font-weight:700;font-style:italic>&lt;stdio.h&gt;</span><span style=color:#8b949e;font-weight:700;font-style:italic>
 </span></span></span><span style=display:flex><span><span style=color:#8b949e;font-weight:700;font-style:italic>#include</span> <span style=color:#8b949e;font-weight:700;font-style:italic>&lt;stdlib.h&gt;</span><span style=color:#8b949e;font-weight:700;font-style:italic>
 </span></span></span><span style=display:flex><span>
 </span></span><span style=display:flex><span><span style=color:#ff7b72>void</span> <span style=color:#d2a8ff;font-weight:700>myhead</span>(FILE <span style=color:#ff7b72;font-weight:700>*</span>fp, <span style=color:#ff7b72>int</span> nlines){
@@ -43,7 +42,7 @@
 </span></span><span style=display:flex><span>     <span style=color:#d2a8ff;font-weight:700>myhead</span>(stdin, nlines);
 </span></span><span style=display:flex><span>     <span style=color:#d2a8ff;font-weight:700>exit</span>(<span style=color:#a5d6ff>0</span>);
 </span></span><span style=display:flex><span>}
-</span></span></code></pre></div><p>オプションを受けられるようにした & ファイル入力も引き受ける</p><div class=highlight><pre tabindex=0 style=color:#e6edf3;background-color:#0d1117;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-C data-lang=C><span style=display:flex><span><span style=color:#8b949e;font-weight:700;font-style:italic>#include</span> <span style=color:#8b949e;font-weight:700;font-style:italic>&lt;stdio.h&gt;</span><span style=color:#8b949e;font-weight:700;font-style:italic>
+</span></span></code></pre></div><p>オプションを受けられるようにした & ファイル入力も引き受ける</p><div class=highlight><pre tabindex=0 style=color:#e6edf3;background-color:#0d1117;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none><code class=language-C data-lang=C><span style=display:flex><span><span style=color:#8b949e;font-weight:700;font-style:italic>#include</span> <span style=color:#8b949e;font-weight:700;font-style:italic>&lt;stdio.h&gt;</span><span style=color:#8b949e;font-weight:700;font-style:italic>
 </span></span></span><span style=display:flex><span><span style=color:#8b949e;font-weight:700;font-style:italic>#include</span> <span style=color:#8b949e;font-weight:700;font-style:italic>&lt;stdlib.h&gt;</span><span style=color:#8b949e;font-weight:700;font-style:italic>
 </span></span></span><span style=display:flex><span><span style=color:#8b949e;font-weight:700;font-style:italic>#include</span> <span style=color:#8b949e;font-weight:700;font-style:italic>&lt;getopt.h&gt;</span><span style=color:#8b949e;font-weight:700;font-style:italic>
 </span></span></span><span style=display:flex><span>
@@ -105,7 +104,7 @@
 </span></span><span style=display:flex><span>    }
 </span></span><span style=display:flex><span>}
 </span></span></code></pre></div><p>head もできるので tail もできるだろと思ったら少し面倒だった．
-リングバッファが分かれば OK</p><div class=highlight><pre tabindex=0 style=color:#e6edf3;background-color:#0d1117;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-C data-lang=C><span style=display:flex><span><span style=color:#8b949e;font-weight:700;font-style:italic>#include</span> <span style=color:#8b949e;font-weight:700;font-style:italic>&lt;stdio.h&gt;</span><span style=color:#8b949e;font-weight:700;font-style:italic>
+リングバッファが分かれば OK</p><div class=highlight><pre tabindex=0 style=color:#e6edf3;background-color:#0d1117;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none><code class=language-C data-lang=C><span style=display:flex><span><span style=color:#8b949e;font-weight:700;font-style:italic>#include</span> <span style=color:#8b949e;font-weight:700;font-style:italic>&lt;stdio.h&gt;</span><span style=color:#8b949e;font-weight:700;font-style:italic>
 </span></span></span><span style=display:flex><span><span style=color:#8b949e;font-weight:700;font-style:italic>#include</span> <span style=color:#8b949e;font-weight:700;font-style:italic>&lt;stdlib.h&gt;</span><span style=color:#8b949e;font-weight:700;font-style:italic>
 </span></span></span><span style=display:flex><span>
 </span></span><span style=display:flex><span><span style=color:#ff7b72>int</span> buf_counter <span style=color:#ff7b72;font-weight:700>=</span> <span style=color:#a5d6ff>0</span>;
@@ -146,7 +145,7 @@
 </span></span><span style=display:flex><span>    }
 </span></span><span style=display:flex><span>
 </span></span><span style=display:flex><span>}
-</span></span></code></pre></div><div class=highlight><pre tabindex=0 style=color:#e6edf3;background-color:#0d1117;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-sh data-lang=sh><span style=display:flex><span>$ ./mytail <span style=color:#a5d6ff>10</span> ./tail.c 
+</span></span></code></pre></div><div class=highlight><pre tabindex=0 style=color:#e6edf3;background-color:#0d1117;-moz-tab-size:4;-o-tab-size:4;tab-size:4;-webkit-text-size-adjust:none><code class=language-sh data-lang=sh><span style=display:flex><span>$ ./mytail <span style=color:#a5d6ff>10</span> ./tail.c 
 </span></span><span style=display:flex><span>                perror<span style=color:#ff7b72;font-weight:700>(</span><span style=color:#a5d6ff>&#34;fopen&#34;</span><span style=color:#ff7b72;font-weight:700>)</span>;
 </span></span><span style=display:flex><span>                exit<span style=color:#ff7b72;font-weight:700>(</span>1<span style=color:#ff7b72;font-weight:700>)</span>;
 </span></span><span style=display:flex><span>            <span style=color:#ff7b72;font-weight:700>}</span>
